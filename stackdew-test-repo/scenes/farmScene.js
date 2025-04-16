@@ -8,8 +8,15 @@ export default class farmScene extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.tilemapTiledJSON('theFarmMap', 'assets/theFarmMap.json');
-		this.load.image('theFarmMap', 'assets/theFarmMap.png');
+		this.load.tilemapTiledJSON('theFarmMap', '../assets/chrisfarm.json');
+		//this.load.image('theFarmMap', '../assets/chrisfarm.png');
+		this.load.image('1_Terrains_32x32', '../assets/1_Terrains_32x32.png');
+		this.load.image('2_Fences_32x32', '../assets/2_Fences_32x32.png');
+		this.load.image(
+			'3_Props_and_Buildings_32x32',
+			'../assets/3_Props_and_Buildings_32x32.png'
+		);
+		this.load.image('6_Trees_32x32', '../assets/6_Trees_32x32.png');
 		this.load.spritesheet('playerSheet', 'assets/farmer.png', {
 			frameWidth: 64,
 			frameHeight: 64,
@@ -26,20 +33,20 @@ export default class farmScene extends Phaser.Scene {
 		);
 
 		// FRONT DOOR to firstFloor
-		this.frontDoorTrigger = this.physics.add.sprite(190, 270, null);
-		this.frontDoorTrigger.setSize(60, 30);
+		this.frontDoorTrigger = this.physics.add.sprite(273, 260, null);
+		this.frontDoorTrigger.setSize(45, 80);
 		this.frontDoorTrigger.setVisible(false);
 		this.frontDoorTriggered = false;
 
 		// PATH to overWorldMap
-		this.toOverworldTrigger = this.physics.add.sprite(660, 530, null);
-		this.toOverworldTrigger.setSize(60, 100);
+		this.toOverworldTrigger = this.physics.add.sprite(750, 365, null);
+		this.toOverworldTrigger.setSize(100, 110);
 		this.toOverworldTrigger.setVisible(false);
 		this.toOverworldTriggered = false;
 
 		//create hidden trigger for planting devling
-		this.plantTrigger = this.physics.add.sprite(410, 350, null);
-		this.plantTrigger.setSize(230, 150);
+		this.plantTrigger = this.physics.add.sprite(560, 235, null);
+		this.plantTrigger.setSize(100, 75);
 		this.plantTrigger.setVisible(false);
 		this.plantTriggered = false;
 
@@ -51,50 +58,90 @@ export default class farmScene extends Phaser.Scene {
 
 		//create devling sprite images
 		this.devlingSprites = {};
-
 		this.cameras.main.fadeIn(1000, 0, 0, 0);
 
 		const map = this.make.tilemap({ key: 'theFarmMap' });
-		const tileset = map.addTilesetImage('theFarmMap', 'theFarmMap');
-		const mapLayer = map.createLayer('Tile Layer 1', tileset, -250, -50);
-		mapLayer.setCollisionByProperty({ collide: true });
-		mapLayer.setScale(0.6);
+		const terrains = map.addTilesetImage('1_Terrains_32x32');
+		const fences = map.addTilesetImage('2_Fences_32x32');
+		const props = map.addTilesetImage('3_Props_and_Buildings_32x32');
+		const trees = map.addTilesetImage('6_Trees_32x32');
+		const tilesets = [terrains, fences, props, trees];
+		const baseLayer = map.createLayer('base', tilesets, 0, 0);
+		const treeLayer1 = map.createLayer('trees', tilesets, 0, 0);
+		const treeLayer2 = map.createLayer('trees2', tilesets, 0, 0);
+		const propsLayer = map.createLayer('props', tilesets, 0, 0);
+		const plotsLayer = map.createLayer('plots', tilesets, 0, 0);
+		propsLayer.setCollisionByProperty({ collide: true });
+		plotsLayer.setCollisionByProperty({ collide: true });
 
-		this.player = new Player(this, 190, 270, 'playerSheet');
-		this.physics.add.collider(this.player, mapLayer);
+		//show collision area on tilemap
+		const debugGraphics = this.add.graphics().setAlpha(0.75);
+		propsLayer.renderDebug(debugGraphics, {
+			tileColor: null,
+			collidingTileColor: new Phaser.Display.Color(255, 0, 0, 255),
+		});
+		plotsLayer.renderDebug(debugGraphics, {
+			tileColor: null,
+			collidingTileColor: new Phaser.Display.Color(0, 255, 0, 255),
+		});
+
+		// const mapLayer = map.createLayer('props', tileset, -250, -50);
+		// mapLayer.setCollisionByProperty({ collide: true });
+		//mapLayer.setScale(0.6);
+
+		this.player = new Player(this, 275, 300, 'playerSheet');
+		this.physics.add.collider(this.player, propsLayer);
+		this.physics.add.collider(this.player, plotsLayer);
+		// this.physics.add.collider(this.player, mapLayer);
 
 		this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 		this.input.keyboard.enabled = true;
+
+		//debug visual for playerBounds
+		this.debugGraphics = this.add.graphics();
+		this.debugGraphics.lineStyle(1, 0x00ff00);
 	}
 
 	update() {
 		this.player.update();
 
+		//create playerBounds for collision
+		const footHeight = this.player.height * 0.25;
 		const playerBounds = new Phaser.Geom.Rectangle(
-			this.player.x - this.player.width / 2,
-			this.player.y - this.player.height / 2,
-			this.player.width,
-			this.player.height
+			this.player.x - this.player.width / 6,
+			this.player.y - this.player.height / 4 + footHeight,
+			this.player.width / 3,
+			footHeight
 		);
 
-		//FRONT DOOR requires space key
+		//debug playerBounds for collision
+		// this.debugGraphics = this.add.graphics();
+		// this.debugGraphics.lineStyle(1, 0x00ff00);
+		// this.debugRect = this.debugGraphics.strokeRectShape(playerBounds);
+		// this.debugGraphics.clear();
+		// this.debugGraphics.lineStyle(1, 0x00ff00);
+		// this.debugGraphics.strokeRectShape(playerBounds);
+
+		//FRONT DOOR requires
 		if (
 			Phaser.Geom.Intersects.RectangleToRectangle(
 				playerBounds,
 				this.frontDoorTrigger.getBounds()
-			) &&
-			Phaser.Input.Keyboard.JustDown(this.spaceKey)
+			)
+			// &&
+			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			this.moveScene('firstFloor');
 		}
 
-		//PATH to overworldmap requires space key
+		//PATH to overworldmap
 		if (
 			Phaser.Geom.Intersects.RectangleToRectangle(
 				playerBounds,
 				this.toOverworldTrigger.getBounds()
-			) &&
-			Phaser.Input.Keyboard.JustDown(this.spaceKey)
+			)
+			// &&
+			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			this.moveScene('overworldScene');
 		}
@@ -190,8 +237,8 @@ export default class farmScene extends Phaser.Scene {
 
 	moveScene(sceneKey) {
 		this.input.keyboard.enabled = false;
-		this.cameras.main.fadeOut(1000, 0, 0, 0);
-		this.time.delayedCall(1000, () => {
+		this.cameras.main.fadeOut(500, 0, 0, 0);
+		this.time.delayedCall(500, () => {
 			this.scene.start(sceneKey);
 		});
 	}

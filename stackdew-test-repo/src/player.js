@@ -3,12 +3,12 @@ import Phaser from 'phaser';
 export default class Player extends Phaser.Physics.Arcade.Sprite {
 	constructor(scene, x, y, texture) {
 		super(scene, x, y, texture);
-		this.setScale(0.9);
+		// this.setScale(0.9);
 
 		// add player to scene
 		scene.add.existing(this);
 		scene.physics.add.existing(this);
-		this.setSize(32, 50).setOffset(0, 10);
+		this.setSize(20, 10).setOffset(22, 35);
 
 		// get control input from scene
 		this.cursors = scene.input.keyboard.createCursorKeys();
@@ -72,7 +72,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	update() {
 		//player movement speed
-		const speed = 200;
+		const speed = 125;
 
 		//stop player moving if not being told to move
 		this.body.setVelocity(0);

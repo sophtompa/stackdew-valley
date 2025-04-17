@@ -16,8 +16,8 @@ export class mainScene extends Phaser.Scene {
 
 const config = {
 	type: Phaser.AUTO,
-	width: 1024,
-	height: 576,
+	width: 800,
+	height: 448,
 	backgroundColor: '#2d2d2d',
 
 	// config to being able to get the dom and have input for computerScene
@@ -35,15 +35,15 @@ const config = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 0 },
-			debug: true,
+			debug: false,
 		},
 	},
 
 	scene: [
+		firstFloor,
 		farmScene,
 		preloadScene,
 		overworldScene,
-		firstFloor,
 		secondFloor,
 		ComputerScene,
 		officeScene,

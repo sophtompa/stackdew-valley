@@ -40,6 +40,7 @@ const config = {
 	},
 
 	scene: [
+		battleScene,
 		firstFloor,
 		farmScene,
 		overworldScene,
@@ -47,7 +48,6 @@ const config = {
 		secondFloor,
 		ComputerScene,
 		officeScene,
-		battleScene,
 	],
 };
 

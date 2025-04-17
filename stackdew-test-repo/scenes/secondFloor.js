@@ -7,8 +7,11 @@ export default class secondFloor extends Phaser.Scene {
   }
 
   preload() {
-    this.load.tilemapTiledJSON("theSecondFloor", "assets/theSecondFloor.JSON");
-    this.load.image("theSecondFloor", "assets/theSecondFloor.png");
+    this.load.tilemapTiledJSON(
+      "secondFloorSceneMap",
+      "assets/secondFloorSceneMap.json"
+    );
+    this.load.image("secondFloorSceneMap", "assets/secondFloorSceneMap.png");
     this.load.spritesheet("playerSheet", "assets/dummy.png", {
       frameWidth: 32,
       frameHeight: 61,
@@ -21,13 +24,16 @@ export default class secondFloor extends Phaser.Scene {
     this.doorTrigger.setVisible(false);
     this.doorTriggered = false;
 
-    const map = this.make.tilemap({ key: "theSecondFloor" });
+    const map = this.make.tilemap({ key: "secondFloorSceneMap" });
 
-    const tilesets = map.addTilesetImage("theSecondFloor", "theSecondFloor");
+    const tilesets = map.addTilesetImage(
+      "secondFloorSceneMap",
+      "secondFloorSceneMap"
+    );
 
     const mapLayer = map.createLayer("Tile Layer 1", tilesets, 0, 0);
 
-    mapLayer.setPosition(0, -300);
+    // mapLayer.setPosition(0, -300);
 
     mapLayer.setCollisionByProperty({ collide: true });
 

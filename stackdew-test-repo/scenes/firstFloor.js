@@ -8,10 +8,10 @@ export default class FirstFloor extends Phaser.Scene {
 
   preload() {
     this.load.tilemapTiledJSON(
-      "firstFloorHouseMap",
-      "assets/firstFloorHouseMap.JSON"
+      "firstFloorSceneMap",
+      "assets/firstFloorSceneMap.json"
     );
-    this.load.image("firstFloorHouseMap", "assets/firstFloorImage.png");
+    this.load.image("firstFloorSceneMap", "assets/firstFloorSceneMap.png");
     this.load.spritesheet("playerSheet", "assets/dummy.png", {
       frameWidth: 32,
       frameHeight: 61,
@@ -27,15 +27,15 @@ export default class FirstFloor extends Phaser.Scene {
     this.enterKey = this.input.keyboard.addKey(ENTER);
     this.spaceKey = this.input.keyboard.addKey(SPACE);
 
-    const map = this.make.tilemap({ key: "firstFloorHouseMap" });
+    const map = this.make.tilemap({ key: "firstFloorSceneMap" });
     const tileset = map.addTilesetImage(
-      "firstFloorHouseMap",
-      "firstFloorHouseMap"
+      "firstFloorSceneMap",
+      "firstFloorSceneMap"
     );
     const mapLayer = map
       .createLayer("Tile Layer 1", tileset)
       .setCollisionByProperty({ collide: true });
-    mapLayer.setPosition(0, -100);
+    mapLayer.setPosition(0, 0);
 
     this.player = new Player(this, 250, 300, "playerSheet");
     this.physics.add.collider(this.player, mapLayer);

@@ -9,10 +9,10 @@ export default class FirstFloor extends Phaser.Scene {
 
 	preload() {
 		this.load.tilemapTiledJSON(
-			'firstFloorHouseMap',
-			'assets/firstFloorHouseMap.JSON'
+			'firstFloorHouseMapData',
+			'../assets/chrishouseMap.json'
 		);
-		this.load.image('firstFloorHouseMap', 'assets/firstFloorImage.png');
+		this.load.image('firstFloorHouseMap', '../assets/chrishouseMap.png');
 		this.load.spritesheet('playerSheet', 'assets/dummy.png', {
 			frameWidth: 32,
 			frameHeight: 61,
@@ -24,31 +24,32 @@ export default class FirstFloor extends Phaser.Scene {
 		this.load.image('emailIcon', 'assets/email.png');
 		this.load.image('newMailIcon', 'assets/mail.png');
 		this.load.audio('mailSound', 'assets/yougotmail.mp3');
+		this.load.audio('harvestingSound', '../assets/harvest.wav');
 	}
 
 	create() {
+		//create audio
+		this.harvestingSound = this.sound.add('harvestingSound');
+
 		// creation of input keys
 		const { ENTER, SPACE } = Phaser.Input.Keyboard.KeyCodes;
 		this.enterKey = this.input.keyboard.addKey(ENTER);
 		this.spaceKey = this.input.keyboard.addKey(SPACE);
 
-		const map = this.make.tilemap({ key: 'firstFloorHouseMap' });
-		const tileset = map.addTilesetImage(
-			'firstFloorHouseMap',
-			'firstFloorHouseMap'
-		);
+		const map = this.make.tilemap({ key: 'firstFloorHouseMapData' });
+		const tileset = map.addTilesetImage('houseMap', 'firstFloorHouseMap');
 		const mapLayer = map
 			.createLayer('Tile Layer 1', tileset)
 			.setCollisionByProperty({ collide: true });
-		mapLayer.setPosition(0, -100);
+		mapLayer.setPosition(0, 0);
 
-		this.player = new Player(this, 250, 300, 'playerSheet');
+		this.player = new Player(this, 100, 180, 'playerSheet');
 		this.physics.add.collider(this.player, mapLayer);
 
 		// Email icon
 		//TODO: sort out images for the icons
 		this.emailIcon = this.physics.add
-			.staticSprite(560, 220, 'emailIcon')
+			.staticSprite(274, 90, 'emailIcon')
 			.setVisible(false);
 		this.floatingMail = this.add
 			.image(400, 650, 'emailIcon')
@@ -93,7 +94,7 @@ export default class FirstFloor extends Phaser.Scene {
 		this.createTriggers();
 
 		//create hidden trigger sprite for computer trigger
-		this.computerTrigger = this.physics.add.sprite(560, 260, null);
+		this.computerTrigger = this.physics.add.sprite(265, 130, null);
 		this.computerTrigger.setSize(60, 60);
 		this.computerTrigger.setVisible(false);
 		this.computerTriggered = false;
@@ -107,7 +108,7 @@ export default class FirstFloor extends Phaser.Scene {
 	}
 
 	spawnEmail() {
-		this.emailIcon.setVisible(true);
+		this.emailIcon.setVisible();
 		this.floatingMail.setVisible(true);
 		this.floatingMail.setPosition(this.emailIcon.x, this.emailIcon.y - 20);
 		this.nearEmail = false;
@@ -155,6 +156,7 @@ export default class FirstFloor extends Phaser.Scene {
 			Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			this.computerTriggered = true;
+			this.harvestingSound.play();
 
 			//code for collecting devlings
 			if (database.length > 0 && userInventory.length === 0) {
@@ -166,6 +168,7 @@ export default class FirstFloor extends Phaser.Scene {
 					const sprite = this.add.sprite(50 + i * 40, 50, 'devlingImage');
 					sprite.setInteractive();
 					sprite.setVisible(true);
+					this.emailIcon.setVisible(false);
 					this.devlingSprites[devling.name] = sprite;
 				}
 				console.log('devlings collected', userInventory);
@@ -180,35 +183,35 @@ export default class FirstFloor extends Phaser.Scene {
 	}
 
 	createTriggers() {
-		this.stairsTrigger = this.physics.add
-			.sprite(128, 160)
-			.setSize(110, 25)
-			.setVisible(false);
-		this.stairsTriggered = false;
+		// this.stairsTrigger = this.physics.add
+		// 	.sprite(128, 160)
+		// 	.setSize(110, 25)
+		// 	.setVisible(false);
+		// this.stairsTriggered = false;
 
 		this.doorTrigger = this.physics.add
-			.sprite(850, 650)
-			.setSize(110, 25)
+			.sprite(560, 440)
+			.setSize(120, 55)
 			.setVisible(false);
 		this.doorTriggered = false;
 	}
 
 	handleTriggers(bounds) {
-		const stairsHit = Phaser.Geom.Intersects.RectangleToRectangle(
-			bounds,
-			this.stairsTrigger.getBounds()
-		);
+		// const stairsHit = Phaser.Geom.Intersects.RectangleToRectangle(
+		// 	bounds,
+		// 	this.stairsTrigger.getBounds()
+		// );
 		const doorHit = Phaser.Geom.Intersects.RectangleToRectangle(
 			bounds,
 			this.doorTrigger.getBounds()
 		);
 
-		if (stairsHit && !this.stairsTriggered) {
-			this.stairsTriggered = true;
-			this.moveScene('secondFloor');
-		} else if (!stairsHit) {
-			this.stairsTriggered = false;
-		}
+		// if (stairsHit && !this.stairsTriggered) {
+		// 	this.stairsTriggered = true;
+		// 	this.moveScene('secondFloor');
+		// } else if (!stairsHit) {
+		// 	this.stairsTriggered = false;
+		// }
 
 		if (doorHit && this.spaceKey.isDown && !this.doorTriggered) {
 			this.doorTriggered = true;

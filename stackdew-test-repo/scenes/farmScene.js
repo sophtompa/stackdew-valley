@@ -25,12 +25,24 @@ export default class farmScene extends Phaser.Scene {
 			frameWidth: 64,
 			frameHeight: 64,
 		});
+
+		//sound effects
+		this.load.audio('plantingSound', '../assets/planting.wav');
+		this.load.audio('wateringSound', '../assets/watering.wav');
+		this.load.audio('harvestingSound', '../assets/harvest.wav');
+		this.load.audio('birdsSound', '../assets/birds.wav');
 	}
 
 	create() {
 		this.spaceKey = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		);
+
+		//create audio
+		this.plantingSound = this.sound.add('plantingSound');
+		this.wateringSound = this.sound.add('wateringSound');
+		this.harvestingSound = this.sound.add('harvestingSound');
+		this.birdSound = this.sound.add('birdsSound');
 
 		// FRONT DOOR to firstFloor
 		this.frontDoorTrigger = this.physics.add.sprite(273, 260, null);
@@ -58,6 +70,38 @@ export default class farmScene extends Phaser.Scene {
 
 		//create devling sprite images
 		this.devlingSprites = {};
+		this.plantedDevlingSprites = {};
+
+		this.renderInventory = () => {
+			for (const name in this.devlingSprites) {
+				if (this.devlingSprites[name]) {
+					this.devlingSprites[name].destroy();
+				}
+			}
+			this.devlingSprites = {};
+
+			let x = 50;
+			const y = 50;
+
+			userInventory.forEach((devling, index) => {
+				// Only show devlings that are not planted OR are fully grown
+				if (!devling.isPlanted || devling.isGrown) {
+					const sprite = this.add.sprite(x, y, 'devlingImage');
+					sprite.setInteractive();
+					sprite.setVisible(true);
+					this.devlingSprites[devling.name] = sprite;
+					x += 40;
+					// if (devling.isPlanted) {
+					// 	let plantedSprite = this.add.sprite(x, y + 50, 'devlingImage');
+					// 	sprite.setInteractive();
+					// 	sprite.setVisible(true);
+					//this.plantedSprites[devling.name] = plantedSprite;
+					// 	x += 40;
+					// }
+				}
+			});
+		};
+
 		this.cameras.main.fadeIn(1000, 0, 0, 0);
 
 		const map = this.make.tilemap({ key: 'theFarmMap' });
@@ -75,15 +119,15 @@ export default class farmScene extends Phaser.Scene {
 		plotsLayer.setCollisionByProperty({ collide: true });
 
 		//show collision area on tilemap
-		const debugGraphics = this.add.graphics().setAlpha(0.75);
-		propsLayer.renderDebug(debugGraphics, {
-			tileColor: null,
-			collidingTileColor: new Phaser.Display.Color(255, 0, 0, 255),
-		});
-		plotsLayer.renderDebug(debugGraphics, {
-			tileColor: null,
-			collidingTileColor: new Phaser.Display.Color(0, 255, 0, 255),
-		});
+		// const debugGraphics = this.add.graphics().setAlpha(0.75);
+		// propsLayer.renderDebug(debugGraphics, {
+		// 	tileColor: null,
+		// 	collidingTileColor: new Phaser.Display.Color(255, 0, 0, 255),
+		// });
+		// plotsLayer.renderDebug(debugGraphics, {
+		// 	tileColor: null,
+		// 	collidingTileColor: new Phaser.Display.Color(0, 255, 0, 255),
+		// });
 
 		// const mapLayer = map.createLayer('props', tileset, -250, -50);
 		// mapLayer.setCollisionByProperty({ collide: true });
@@ -100,6 +144,9 @@ export default class farmScene extends Phaser.Scene {
 		//debug visual for playerBounds
 		this.debugGraphics = this.add.graphics();
 		this.debugGraphics.lineStyle(1, 0x00ff00);
+
+		this.renderInventory();
+		this.birdSound.play();
 	}
 
 	update() {
@@ -147,6 +194,7 @@ export default class farmScene extends Phaser.Scene {
 		}
 
 		//Plot for planting, watering, harvesting
+
 		const isOverlappingPlot = Phaser.Geom.Intersects.RectangleToRectangle(
 			playerBounds,
 			this.plantTrigger.getBounds()
@@ -181,9 +229,40 @@ export default class farmScene extends Phaser.Scene {
 
 						//Set devling to visible in inventory when grown and harvested
 						const sprite = this.devlingSprites[userInventory[i].name];
+						let plantedSprite =
+							this.plantedDevlingSprites[userInventory[i].name];
+						if (i < 3) {
+							plantedSprite = this.add.sprite(500 + i * 62, 70, 'devlingImage');
+							plantedSprite.setInteractive();
+							plantedSprite.setVisible(true);
+							this.plantedDevlingSprites[userInventory[i].name] = plantedSprite;
+							this.plantingSound.play();
+						}
+						if (i > 2) {
+							plantedSprite = this.add.sprite(
+								500 + (i - 3) * 62,
+								135,
+								'devlingImage'
+							);
+							plantedSprite.setInteractive();
+							plantedSprite.setVisible(true);
+							this.plantedDevlingSprites[userInventory[i].name] = plantedSprite;
+							this.plantingSound.play();
+						}
+
+						console.log('devling sprites', this.devlingSprites);
 						if (sprite) {
 							sprite.setVisible(false);
+
+							console.log('sprite removed');
 						}
+
+						if (plantedSprite) {
+							plantedSprite.setVisible(true);
+
+							console.log('sprite planted');
+						}
+
 						console.log('planting', userInventory[i]);
 						break;
 					}
@@ -199,6 +278,8 @@ export default class farmScene extends Phaser.Scene {
 						userInventory[i].isGrown === false
 					) {
 						userInventory[i].isWatered = true;
+						this.wateringSound.play();
+						//this.jiggleSprite(plantedSprite[userInventory[i].name]);
 						console.log('watering', userInventory[i].name);
 						break;
 					}
@@ -215,8 +296,12 @@ export default class farmScene extends Phaser.Scene {
 
 						//Set devling to visible in inventory when grown and harvested
 						const sprite = this.devlingSprites[userInventory[i].name];
+						let plantedSprite =
+							this.plantedDevlingSprites[userInventory[i].name];
 						if (sprite) {
 							sprite.setVisible(true);
+							plantedSprite.setVisible(false);
+							this.harvestingSound.play();
 						}
 
 						console.log(
@@ -240,6 +325,20 @@ export default class farmScene extends Phaser.Scene {
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
 			this.scene.start(sceneKey);
+		});
+	}
+
+	jiggleSprite(sprite) {
+		this.tweens.add({
+			targets: sprite,
+			x: sprite.x + 3,
+			yoyo: true,
+			repeat: 3,
+			duration: 50,
+			ease: 'Sine.easeInOut',
+			onComplete: () => {
+				sprite.x = sprite.x - 3; // reset to original position just in case
+			},
 		});
 	}
 }

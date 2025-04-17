@@ -35,15 +35,15 @@ const config = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 0 },
-			debug: true,
+			debug: false,
 		},
 	},
 
 	scene: [
+		firstFloor,
 		farmScene,
 		preloadScene,
 		overworldScene,
-		firstFloor,
 		secondFloor,
 		ComputerScene,
 		officeScene,

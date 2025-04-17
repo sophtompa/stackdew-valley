@@ -8,7 +8,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		// add player to scene
 		scene.add.existing(this);
 		scene.physics.add.existing(this);
-		this.setSize(20, 10).setOffset(22, 35);
+		this.setSize(24, 15).setOffset(4, 40);
 
 		// get control input from scene
 		this.cursors = scene.input.keyboard.createCursorKeys();
@@ -100,10 +100,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			// return to an idle frame if character stops
 			switch (this.lastDirection) {
 				case 'left':
-					this.setFrame(35);
+					this.setFrame(4);
 					break;
 				case 'right':
-					this.setFrame(16);
+					this.setFrame(15);
 					break;
 				case 'up':
 					this.setFrame(8);

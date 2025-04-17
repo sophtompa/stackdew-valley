@@ -9,7 +9,6 @@ export default class farmScene extends Phaser.Scene {
 
 	preload() {
 		this.load.tilemapTiledJSON('theFarmMap', '../assets/chrisfarm.json');
-		//this.load.image('theFarmMap', '../assets/chrisfarm.png');
 		this.load.image('1_Terrains_32x32', '../assets/1_Terrains_32x32.png');
 		this.load.image('2_Fences_32x32', '../assets/2_Fences_32x32.png');
 		this.load.image(
@@ -21,6 +20,7 @@ export default class farmScene extends Phaser.Scene {
 			frameWidth: 64,
 			frameHeight: 64,
 		});
+		//devling head for UI
 		this.load.spritesheet('devlingImage', '../assets/devlingSpritesheet.png', {
 			frameWidth: 64,
 			frameHeight: 64,
@@ -62,42 +62,58 @@ export default class farmScene extends Phaser.Scene {
 		this.plantTrigger.setVisible(false);
 		this.plantTriggered = false;
 
-		//create hidden trigger for watering devling
-		// this.waterTrigger = this.physics.add.sprite(272, 400, null);
-		// this.waterTrigger.setSize(42, 42);
-		// this.waterTrigger.setVisible(false);
-		// this.waterTriggered = false;
-
 		//create devling sprite images
+		//inventory:
 		this.devlingSprites = {};
+		//farm dirt patch:
 		this.plantedDevlingSprites = {};
 
+		//function to render inventory. To be called on each scene change?
 		this.renderInventory = () => {
+			//remove existing inventory UI
 			for (const name in this.devlingSprites) {
 				if (this.devlingSprites[name]) {
 					this.devlingSprites[name].destroy();
 				}
 			}
-			this.devlingSprites = {};
+			//remove existing dirt patch UI
+			for (const name in this.plantedDevlingSprites) {
+				if (this.plantedDevlingSprites[name]) {
+					this.plantedDevlingSprites[name].destroy();
+				}
+			}
 
-			let x = 50;
-			const y = 50;
+			//user inventory
+			// const savedInventory = localStorage.getItem('userInventory');
+			// if(savedInventory) {
+			// 	userInventory = JSON.parse(savedInventory);
+			// }
 
-			userInventory.forEach((devling, index) => {
-				// Only show devlings that are not planted OR are fully grown
+			//set inventory coordinates
+			let invX = 50
+			let invY = 50
+
+			userInventory.forEach((devling) => {
+
+				// Only show devlings that are not planted OR are fully grown in inventory
 				if (!devling.isPlanted || devling.isGrown) {
-					const sprite = this.add.sprite(x, y, 'devlingImage');
+
+					const sprite = this.add.sprite(invX, invY, 'devlingImage');
 					sprite.setInteractive();
 					sprite.setVisible(true);
 					this.devlingSprites[devling.name] = sprite;
-					x += 40;
-					// if (devling.isPlanted) {
-					// 	let plantedSprite = this.add.sprite(x, y + 50, 'devlingImage');
-					// 	sprite.setInteractive();
-					// 	sprite.setVisible(true);
-					//this.plantedSprites[devling.name] = plantedSprite;
-					// 	x += 40;
-					// }
+					invX += 40;
+
+				//Only show devling that are planted
+				if (devling.isPlanted && devling.plantX !== undefined && devling.plantY !== undefined) {
+
+					const plantedSprite = this.add.sprite(devling.plantX, devling.plantY, 'devlingImage')
+					plantedSprite.setInteractive()
+					plantedSprite.setVisible(true)
+					this.plantedDevlingSprites[devling.name] = plantedSprite;
+					invY += 40
+
+				}
 				}
 			});
 		};
@@ -239,6 +255,10 @@ export default class farmScene extends Phaser.Scene {
 							this.plantedDevlingSprites[userInventory[i].name];
 						if (i < 3) {
 							plantedSprite = this.add.sprite(500 + i * 62, 70, 'devlingImage');
+							//Creating x and y coordinated for planted sprite
+							userInventory[i].plantX = plantedSprite.x;
+							userInventory[i].plantY = plantedSprite.y;
+
 							plantedSprite.setInteractive();
 							plantedSprite.setVisible(true);
 							this.plantedDevlingSprites[userInventory[i].name] = plantedSprite;
@@ -268,7 +288,8 @@ export default class farmScene extends Phaser.Scene {
 
 							console.log('sprite planted');
 						}
-
+						
+						localStorage.setItem('userInventory', JSON.stringify(userInventory));
 						console.log('planting', userInventory[i]);
 						break;
 					}

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import overworldScene from '../scenes/testScene.js';
+import overworldScene from '../scenes/overworld.js';
 import preloadScene from '../scenes/preloadScene.js';
 import firstFloor from '../scenes/firstFloor.js';
 import secondFloor from '../scenes/secondFloor.js';
@@ -35,15 +35,15 @@ const config = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 0 },
-			debug: false,
+			debug: true,
 		},
 	},
 
 	scene: [
 		firstFloor,
 		farmScene,
-		preloadScene,
 		overworldScene,
+		preloadScene,
 		secondFloor,
 		ComputerScene,
 		officeScene,

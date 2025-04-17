@@ -57,8 +57,8 @@ export default class farmScene extends Phaser.Scene {
 		this.toOverworldTriggered = false;
 
 		//create hidden trigger for planting devling
-		this.plantTrigger = this.physics.add.sprite(560, 235, null);
-		this.plantTrigger.setSize(100, 75);
+		this.plantTrigger = this.physics.add.sprite(560, 215, null);
+		this.plantTrigger.setSize(150, 25);
 		this.plantTrigger.setVisible(false);
 		this.plantTriggered = false;
 
@@ -194,10 +194,16 @@ export default class farmScene extends Phaser.Scene {
 		}
 
 		//Plot for planting, watering, harvesting
-
+		const plantTriggerBody = this.plantTrigger.body
 		const isOverlappingPlot = Phaser.Geom.Intersects.RectangleToRectangle(
 			playerBounds,
-			this.plantTrigger.getBounds()
+			new Phaser.Geom.Rectangle(
+				plantTriggerBody.x,
+				plantTriggerBody.y,
+				plantTriggerBody.width,
+				plantTriggerBody.height,
+
+			)
 		);
 
 		if (isOverlappingPlot && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {

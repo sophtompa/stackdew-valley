@@ -19,16 +19,46 @@ export default class battleCardScene extends Phaser.Scene {
     const enemyDevling = {
       name: "EnemyDevling",
       stats: this.generateEnemyStats(playerDevling),
-    };
-
-    // Draw cards
+    };    
+    
     this.add.image(centerX - cardOffset, centerY, "playerCard");
     this.add.image(centerX + cardOffset, centerY, "enemyCard");
+
+  const placeForText = [];
+  const statIndex = 0;
+
+  this.devlingStats = Object.keys(playerDevling).filter(stat =>
+    typeof playerDevling[stat] === 'number'
+  )
+
+let playerStatDistance = centerY - 4; 
+
+for (const [key, value] of Object.entries(playerDevling)) {
+if(typeof value === "number"){
+  this.add.text(centerX / 2, playerStatDistance,  `${key}: ${value}`, { fontSize: 32, font: '"Press Start 2P"', fill: this.placeForText ? "green" : "black"} );
+  playerStatDistance += 40
+}
+}
+
+let enemyStatDistance = centerY + 6;
+
+for (const [key, value] of Object.entries(enemyDevling.stats)) {
+  if(typeof value === "number"){
+    this.add.text(centerX * 1.3 + 20, enemyStatDistance,  `${key}: ${value}`, { fontSize: 32, font: '"Press Start 2P"', color: "black"});
+    enemyStatDistance += 36;
+  }
+  }
+    // Draw cards
+
 
     console.log("Player Devling:", playerDevling);
     console.log("Enemy Devling:", enemyDevling);
 
-    this.add.text(10, 10, "???", { fontSize: 32, font: '"Press Start 2P"' });
+    
+  }
+
+  update() {
+
   }
 
   generateEnemyStats(playerDevling) {

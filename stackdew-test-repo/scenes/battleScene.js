@@ -3,7 +3,10 @@ import Phaser from 'phaser';
 export default class battleScene extends Phaser.Scene {
 	constructor() {
 		super('battleScene');
+		let keyPDown = false;
 	}
+
+	//always listen for P press regardless of pause state
 
 	preload() {
 		//single map background
@@ -30,10 +33,13 @@ export default class battleScene extends Phaser.Scene {
 	}
 
 	create() {
+		//draw map
 		this.add.image(0, 0, 'jobApproach').setOrigin(0, 0);
 
+		// added for "jumper"
 		this.add.sprite(300, 1000, 'playerSheet');
 
+		// initialise camera position
 		this.cameras.main.setScroll(0, 4030);
 
 		//create flame animated sprites
@@ -48,6 +54,7 @@ export default class battleScene extends Phaser.Scene {
 		flame1.play('flame').setScale(2.5).setFrame(3);
 		flame2.play('flame').setScale(2.5);
 
+		// easter egg grafitti
 		this.add
 			.sprite(350, 1600, 'grafitti')
 			.setScale(0.35, 0.65)
@@ -59,26 +66,17 @@ export default class battleScene extends Phaser.Scene {
 		//skip scene if player presses space
 		this.input.keyboard.on('keydown-SPACE', this.skipConversation, this);
 
-		//always listen for P press regardless of pause state
+		//listen for p press for pausing
 		this.input.keyboard.on('keydown-P', this.togglePause, this);
 	}
 
-	togglePause() {
-		const isPaused = this.scene.isPaused('battleScene');
-		if (isPaused) {
-			console.log('unpaused');
-			this.scene.resume();
-		} else {
-			console.log('paused');
-			this.scene.pause();
-		}
-	}
-
 	skipConversation() {
+		//skip to specified scene if user presses space (needs changing to actual battlescene)
 		this.scene.start('overworldScene');
 	}
 
 	moveScene() {
+		//transition to next scene
 		this.cameras.main.fadeOut(1000, 0, 0, 0);
 		this.time.delayedCall(1000, () => {
 			this.scene.start('overworldScene');
@@ -86,10 +84,26 @@ export default class battleScene extends Phaser.Scene {
 	}
 
 	update() {
-		if (this.scene.isPaused()) {
-			if (this.input.keyboard.justPressed(Phaser.Input.Keyboard.KeyCodes.P)) {
-				this.togglePause();
-			}
+		//check for p press to toggle pause
+		const keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+		if (Phaser.Input.Keyboard.JustDown(keyP) && !this.keyPDown) {
+			this.togglePause();
+			this.keyPDown = true;
+		}
+		//reset keyPDown flag after p is released
+		if (Phaser.Input.Keyboard.JustUp(keyP)) {
+			this.keyPDown = false;
+		}
+	}
+
+	togglePause() {
+		const isPaused = this.scene.isPaused();
+		if (isPaused) {
+			console.log('unpaused');
+			this.scene.resume();
+		} else {
+			console.log('paused');
+			this.scene.pause();
 		}
 	}
 
@@ -175,6 +189,7 @@ export default class battleScene extends Phaser.Scene {
 		const panelHeight = 35;
 		const panelPadding = 20;
 		const textPadding = 7;
+		const baseOffsetX = 50;
 
 		const lines = [
 			{ text: `"Hello. I'm here about the job?"`, color: '#2c3e50' },
@@ -184,6 +199,7 @@ export default class battleScene extends Phaser.Scene {
 
 		const panels = [];
 		const shadows = [];
+		const pointers = [];
 		const textObjects = [];
 
 		let currentLine = 0;
@@ -213,7 +229,7 @@ export default class battleScene extends Phaser.Scene {
 			// black shadow, 50% transparent
 			shadow.fillStyle(0x000000, 0.5);
 			shadow.fillRoundedRect(
-				panelPadding + shadowOffset,
+				panelPadding + shadowOffset + baseOffsetX,
 				yPosition + shadowOffset,
 				panelWidth,
 				panelHeight,
@@ -225,7 +241,7 @@ export default class battleScene extends Phaser.Scene {
 			const frame = this.add.graphics();
 			frame.lineStyle(outlineStroke, outlineColour, 1);
 			frame.strokeRoundedRect(
-				panelPadding,
+				panelPadding + baseOffsetX,
 				yPosition,
 				panelWidth,
 				panelHeight,
@@ -233,7 +249,7 @@ export default class battleScene extends Phaser.Scene {
 			);
 			frame.fillStyle(0xdee6ca, 1);
 			frame.fillRoundedRect(
-				panelPadding,
+				panelPadding + baseOffsetX,
 				yPosition,
 				panelWidth,
 				panelHeight,
@@ -241,11 +257,39 @@ export default class battleScene extends Phaser.Scene {
 			);
 			panels.push(frame);
 
-			//const margin = 20;
+			//triangle pointer to make it look like a speech bubble
+			const pointer = this.add.graphics();
+			pointer.fillStyle(0xb5c983, 1);
+
+			if (textColor === '#2c3e50') {
+				// left side triangle
+				pointer.fillTriangle(
+					panelPadding - 15 + baseOffsetX,
+					yPosition + 30,
+					panelPadding + baseOffsetX,
+					yPosition + 10,
+					panelPadding + baseOffsetX,
+					yPosition + 30,
+					borderRadius
+				);
+			} else {
+				//right side triangle
+
+				pointer.fillTriangle(
+					panelPadding + panelWidth + -5 + baseOffsetX,
+					yPosition + 35,
+					panelPadding + panelWidth + 2 + baseOffsetX,
+					yPosition + 22,
+					panelPadding + panelWidth + 10 + baseOffsetX,
+					yPosition + 35
+				);
+			}
+
+			pointers.push(pointer);
 
 			//text object placed inside panel
 			const text = this.add.text(
-				panelPadding + textPadding + margin,
+				panelPadding + textPadding + margin + baseOffsetX,
 				yPosition + textPadding,
 				'',
 				{
@@ -272,6 +316,7 @@ export default class battleScene extends Phaser.Scene {
 				const textObj = textObjects[thisLineIndex];
 				const panelObj = panels[thisLineIndex];
 				const shadowObj = shadows[thisLineIndex];
+				const pointerObj = pointers[thisLineIndex];
 
 				textObjects[currentLine].setStyle({ color: lines[currentLine].color });
 				textObjects[currentLine].setText('');
@@ -279,7 +324,7 @@ export default class battleScene extends Phaser.Scene {
 				this.typeText(textObj, lines[thisLineIndex].text, () => {
 					this.time.delayedCall(1250, () => {
 						this.tweens.add({
-							targets: [panelObj, textObj, shadowObj],
+							targets: [panelObj, textObj, shadowObj, pointerObj],
 							alpha: 0,
 							duration: 1000,
 							ease: 'Power2',

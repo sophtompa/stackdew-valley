@@ -40,8 +40,8 @@ const config = {
 	},
 
 	scene: [
-		firstFloor,
 		farmScene,
+		firstFloor,
 		overworldScene,
 		preloadScene,
 		secondFloor,

@@ -10,7 +10,7 @@ export default class farmScene extends Phaser.Scene {
 	preload() {
 		this.load.tilemapTiledJSON('theFarmMap', '../assets/chrisfarm.json');
 		this.load.image('1_Terrains_32x32', '../assets/1_Terrains_32x32.png');
-		this.load.image('2_Fences_32x32', '../assets/2_Fences_32x32.png');
+		this.load.image('2_Fences_32x32', '../cassets/2_Fences_32x32.png');
 		this.load.image(
 			'3_Props_and_Buildings_32x32',
 			'../assets/3_Props_and_Buildings_32x32.png'
@@ -256,8 +256,8 @@ export default class farmScene extends Phaser.Scene {
 						if (i < 3) {
 							plantedSprite = this.add.sprite(500 + i * 62, 70, 'devlingImage');
 							//Creating x and y coordinated for planted sprite
-							userInventory[i].plantX = plantedSprite.x;
-							userInventory[i].plantY = plantedSprite.y;
+							// userInventory[i].plantX = plantedSprite.x;
+							// userInventory[i].plantY = plantedSprite.y;
 
 							plantedSprite.setInteractive();
 							plantedSprite.setVisible(true);
@@ -289,7 +289,7 @@ export default class farmScene extends Phaser.Scene {
 							console.log('sprite planted');
 						}
 						
-						localStorage.setItem('userInventory', JSON.stringify(userInventory));
+						// localStorage.setItem('userInventory', JSON.stringify(userInventory));
 						console.log('planting', userInventory[i]);
 						break;
 					}

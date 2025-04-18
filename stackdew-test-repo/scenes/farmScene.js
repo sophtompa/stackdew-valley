@@ -10,7 +10,7 @@ export default class farmScene extends Phaser.Scene {
 	preload() {
 		this.load.tilemapTiledJSON('theFarmMap', '../assets/chrisfarm.json');
 		this.load.image('1_Terrains_32x32', '../assets/1_Terrains_32x32.png');
-		this.load.image('2_Fences_32x32', '../cassets/2_Fences_32x32.png');
+		this.load.image('2_Fences_32x32', '../assets/2_Fences_32x32.png');
 		this.load.image(
 			'3_Props_and_Buildings_32x32',
 			'../assets/3_Props_and_Buildings_32x32.png'

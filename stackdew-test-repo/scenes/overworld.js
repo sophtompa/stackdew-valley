@@ -51,9 +51,9 @@ export default class overworldScene extends Phaser.Scene {
 		const map = this.make.tilemap({ key: 'map' });
 		const tilesets = map.addTilesetImage('1_Terrains_32x32', 'mapImage');
 		const mapLayer = map.createLayer('grass', tilesets, 0, 0);
-		// mapLayer.setCollisionByProperty({ collide: true });
+		mapLayer.setCollisionByProperty({ collide: true });
 		this.locationLayer = map.createLayer('locations', tilesets, 0, 0);
-		// this.locationLayer.setCollisionByProperty({ collide: true });
+		this.locationLayer.setCollisionByProperty({ collide: true });
 
 		//create hidden trigger sprite for farm scene
 		this.farmTrigger = this.physics.add.sprite(272, 240, null);

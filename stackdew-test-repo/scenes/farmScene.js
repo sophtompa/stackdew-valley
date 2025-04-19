@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import Player from '../src/player.js';
+import DialogueManager from '../src/dialogueManager.js';
 import { database, userInventory } from '../src/dummydata.js';
 
 export default class farmScene extends Phaser.Scene {
@@ -31,12 +32,45 @@ export default class farmScene extends Phaser.Scene {
 		this.load.audio('wateringSound', '../assets/watering.wav');
 		this.load.audio('harvestingSound', '../assets/harvest.wav');
 		this.load.audio('birdsSound', '../assets/birds.wav');
+		this.load.audio('speechSound', '../assets/speechSound.wav');
 	}
 
 	create() {
 		this.spaceKey = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		);
+
+		//initialise dialogue manager
+		this.dialogue = new DialogueManager(this);
+
+		//test to see if the scene has ran before and if not, play a tutorial
+		if (!this.registry.get('farmSceneTutorial')) {
+			this.registry.set('farmSceneTutorial', true);
+			this.time.delayedCall(700, () => {
+				this.dialogue.startDialogue(
+					[
+						{
+							text: `Tip: Use this plot by the troughs to nurture your devlings.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Tip: Press Space to interact with it.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Tip: You can also head back into the farmhouse or into StackDew Valley.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+					],
+					null,
+					360,
+					20
+				);
+			});
+		}
 
 		//create audio
 		this.plantingSound = this.sound.add('plantingSound');
@@ -90,30 +124,34 @@ export default class farmScene extends Phaser.Scene {
 			// }
 
 			//set inventory coordinates
-			let invX = 50
-			let invY = 50
+			let invX = 50;
+			let invY = 50;
 
 			userInventory.forEach((devling) => {
-
 				// Only show devlings that are not planted OR are fully grown in inventory
 				if (!devling.isPlanted || devling.isGrown) {
-
 					const sprite = this.add.sprite(invX, invY, 'devlingImage');
 					sprite.setInteractive();
 					sprite.setVisible(true);
 					this.devlingSprites[devling.name] = sprite;
 					invX += 40;
 
-				//Only show devling that are planted
-				if (devling.isPlanted && devling.plantX !== undefined && devling.plantY !== undefined) {
-
-					const plantedSprite = this.add.sprite(devling.plantX, devling.plantY, 'devlingImage')
-					plantedSprite.setInteractive()
-					plantedSprite.setVisible(true)
-					this.plantedDevlingSprites[devling.name] = plantedSprite;
-					invY += 40
-
-				}
+					//Only show devling that are planted
+					if (
+						devling.isPlanted &&
+						devling.plantX !== undefined &&
+						devling.plantY !== undefined
+					) {
+						const plantedSprite = this.add.sprite(
+							devling.plantX,
+							devling.plantY,
+							'devlingImage'
+						);
+						plantedSprite.setInteractive();
+						plantedSprite.setVisible(true);
+						this.plantedDevlingSprites[devling.name] = plantedSprite;
+						invY += 40;
+					}
 				}
 			});
 		};
@@ -210,15 +248,14 @@ export default class farmScene extends Phaser.Scene {
 		}
 
 		//Plot for planting, watering, harvesting
-		const plantTriggerBody = this.plantTrigger.body
+		const plantTriggerBody = this.plantTrigger.body;
 		const isOverlappingPlot = Phaser.Geom.Intersects.RectangleToRectangle(
 			playerBounds,
 			new Phaser.Geom.Rectangle(
 				plantTriggerBody.x,
 				plantTriggerBody.y,
 				plantTriggerBody.width,
-				plantTriggerBody.height,
-
+				plantTriggerBody.height
 			)
 		);
 
@@ -288,8 +325,11 @@ export default class farmScene extends Phaser.Scene {
 
 							console.log('sprite planted');
 						}
-						
-						localStorage.setItem('userInventory', JSON.stringify(userInventory));
+
+						localStorage.setItem(
+							'userInventory',
+							JSON.stringify(userInventory)
+						);
 						console.log('planting', userInventory[i]);
 						break;
 					}
@@ -305,7 +345,7 @@ export default class farmScene extends Phaser.Scene {
 						userInventory[i].isGrown === false
 					) {
 						userInventory[i].isWatered = true;
-						this.wateringSound.play();
+						this.wateringSound.play({ volume: 0.5 });
 						//this.jiggleSprite(plantedSprite[userInventory[i].name]);
 						console.log('watering', userInventory[i].name);
 						break;

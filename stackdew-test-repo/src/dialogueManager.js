@@ -1,3 +1,6 @@
+//todo MOVE X/Y COORDINATES TO EACH DIALOGUE LINE FOR FLEXIBILITY IN POSITION OF CONVERSATION
+//todo DROP SHADOW ON POINTER
+
 export default class DialogueManager {
 	constructor(scene) {
 		this.scene = scene;
@@ -9,6 +12,7 @@ export default class DialogueManager {
 	}
 
 	startDialogue(lines, onComplete, x, y) {
+		this.resetDialogue();
 		this.lines = lines;
 		this.onComplete = onComplete;
 		this.dialogueX = x;
@@ -22,7 +26,6 @@ export default class DialogueManager {
 		const yPosition = this.dialogueY;
 
 		if (this.currentLine < this.lines.length) {
-			//const yPosition = 3200; // adjust spacing as needed
 			this.createPanel(
 				yPosition,
 				this.lines[this.currentLine].text,
@@ -36,6 +39,39 @@ export default class DialogueManager {
 			const panelObj = this.panels[index];
 			const shadowObj = this.shadows[index];
 			const pointerObj = this.pointers[index];
+
+			// check to see if we're SHOUTING
+			const currentLineData = this.lines[this.currentLine];
+			const isShouting =
+				currentLineData.text === currentLineData.text.toUpperCase();
+
+			//if SHOUTING add a tween to the text to make it jiggle
+			if (isShouting) {
+				this.shoutTween = this.scene.tweens.add({
+					targets: textObj,
+					x: {
+						from: textObj.x - 2,
+						to: textObj.x + 2,
+					},
+					// y: {
+					// 	from: textObj.y - 1,
+					// 	to: textObj.y + 1,
+					// },
+					duration: 50,
+					yoyo: true,
+					repeat: -1,
+				});
+
+				//jiggle speech bubble panel if SHOUTING
+				// this.scene.tweens.add({
+				// 	targets: panelObj,
+				// 	x: { from: panelObj.x - 2, to: panelObj.x + 2 },
+				// 	y: { from: panelObj.y - 1, to: panelObj.y + 1 },
+				// 	duration: 50,
+				// 	yoyo: true,
+				// 	repeat: -1,
+				// });
+			}
 
 			textObj.setStyle({ color: this.lines[index].color });
 			textObj.setText('');
@@ -57,7 +93,13 @@ export default class DialogueManager {
 				});
 			});
 		} else {
-			if (this.onComplete) this.onComplete();
+			if (this.onComplete) {
+				if (this.shoutTween) {
+					this.shoutTween.stop();
+					this.shoutTween = null;
+				}
+				this.onComplete();
+			}
 		}
 	}
 
@@ -68,7 +110,7 @@ export default class DialogueManager {
 		xPosition = 50,
 		speaker = 'tutorial'
 	) {
-		const { add, time } = this.scene;
+		const { add } = this.scene;
 
 		const panelPadding = 20;
 		const textPadding = 7;
@@ -97,7 +139,7 @@ export default class DialogueManager {
 		const panelHeight = wrappedText.height + textPadding * 2;
 		wrappedText.destroy();
 
-		// shadow
+		//shadow
 		const shadow = add.graphics();
 		shadow.fillStyle(0x000000, 0.5);
 		shadow.fillRoundedRect(
@@ -109,7 +151,7 @@ export default class DialogueManager {
 		);
 		this.shadows.push(shadow);
 
-		// panel
+		//panel
 		const panel = add.graphics();
 		panel.lineStyle(outlineStroke, outlineColour, 1);
 		panel.strokeRoundedRect(
@@ -129,7 +171,7 @@ export default class DialogueManager {
 		);
 		this.panels.push(panel);
 
-		// pointer
+		//pointer
 		const pointer = add.graphics();
 		pointer.fillStyle(0xb5c983, 1);
 
@@ -137,7 +179,7 @@ export default class DialogueManager {
 		const bottomY = yPosition + panelHeight - 5;
 
 		//speech bubble pointer pointing left for player speech
-		if (speaker === 'player') {
+		if (speaker === 'left') {
 			pointer.fillTriangle(
 				//bottom left of triangle (essentially the pointer)
 				panelPadding - 25 + xPosition,
@@ -150,7 +192,7 @@ export default class DialogueManager {
 				bottomY
 			);
 			//speech bubble pointer pointing right for npc speech
-		} else if (speaker === 'npc') {
+		} else if (speaker === 'right') {
 			pointer.fillTriangle(
 				//bottom right of triangle (essentially the pointer)
 				panelPadding + panelWidth + 25 + xPosition,
@@ -162,7 +204,7 @@ export default class DialogueManager {
 				panelPadding + panelWidth + xPosition,
 				bottomY
 			);
-		} else if (speaker === 'narrator' || 'tutorial') pointer.setVisible(false);
+		} else if (speaker === '') pointer.setVisible(false);
 		this.pointers.push(pointer);
 
 		const text = add.text(
@@ -179,30 +221,144 @@ export default class DialogueManager {
 		this.textObjects.push(text);
 	}
 
+	getWrappedText(fullText, textStyle, wrapWidth) {
+		const words = fullText.split(/(\s+)/); // split into words + whitespace
+		let line = '';
+		let wrappedText = '';
+		const tempText = this.scene.add.text(0, 0, '', textStyle);
+
+		for (let i = 0; i < words.length; i++) {
+			const testLine = line + words[i];
+			tempText.setText(testLine);
+			if (tempText.width > wrapWidth && line !== '') {
+				//new line if word doesn't fit, removing leading space if there is one
+				wrappedText += '\n' + words[i].trimStart();
+				line = words[i].trimStart();
+			} else {
+				wrappedText += words[i];
+				line = testLine;
+			}
+		}
+
+		tempText.destroy();
+		return wrappedText;
+	}
+
 	typeText(textObject, fullText, onComplete, speed = 50) {
-		let i = 0;
+		const speaker = this.lines[this.currentLine].speaker;
 		const soundKey =
 			{
 				player: 'speechSound',
 				npc: 'speechSound',
 				narrator: 'narratorSound',
 				tutorial: 'tutorialSound',
-			}[this.lines[this.currentLine].speaker] || 'speechSound';
+			}[speaker] || 'speechSound';
 
 		const sound = this.scene.sound.add(soundKey);
-		this.scene.time.addEvent({
-			repeat: fullText.length - 1,
-			delay: speed,
-			callback: () => {
-				textObject.text += fullText[i];
+
+		const textStyle = {
+			fontFamily: textObject.style.fontFamily,
+			fontSize: textObject.style.fontSize,
+		};
+
+		const wrappedText = this.getWrappedText(
+			fullText,
+			textStyle,
+			textObject.style.wordWrapWidth
+		);
+
+		let i = 0;
+		const typeNextChar = () => {
+			if (i < wrappedText.length) {
+				textObject.text += wrappedText[i];
 				i++;
-				const pitch = Phaser.Math.FloatBetween(0.7, 1.3);
-				//const sound = this.scene.sound.add('speechSound');
+
+				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
 				sound.play({ volume: 0.05, rate: pitch });
-				if (i === fullText.length && onComplete) {
-					onComplete();
-				}
-			},
-		});
+
+				this.scene.time.delayedCall(speed, typeNextChar);
+			} else if (onComplete) {
+				onComplete();
+			}
+		};
+
+		typeNextChar();
 	}
+
+	resetDialogue() {
+		if (this.shoutTween) {
+			this.shoutTween.stop();
+			this.shoutTween = null;
+		}
+		this.panels.forEach((p) => p.destroy());
+		this.shadows.forEach((s) => s.destroy());
+		this.pointers.forEach((p) => p.destroy());
+		this.textObjects.forEach((t) => t.destroy());
+
+		this.panels = [];
+		this.shadows = [];
+		this.pointers = [];
+		this.textObjects = [];
+	}
+
+	// typeText(textObject, fullText, onComplete, speed = 50) {
+	// 	const speaker = this.lines[this.currentLine].speaker;
+	// 	const soundKey =
+	// 		{
+	// 			player: 'speechSound',
+	// 			npc: 'speechSound',
+	// 			narrator: 'narratorSound',
+	// 			tutorial: 'tutorialSound',
+	// 		}[this.lines[this.currentLine].speaker] || 'speechSound';
+
+	// 	const sound = this.scene.sound.add(soundKey);
+
+	//     //temporarily test dialogue line width
+	// 		const temp = this.scene.add.text(0, 0, testLine, {
+	// 			fonstFamily: textObject.style.fontFamily,
+	// 			fonstSize: textObject.style.fontSize,
+	// 		});
+	// 		const width = temp.width;
+	// 		temp.destroy();
+
+	// 		if (width > maxWidth) {
+	// 			//start a new line if needed
+	// 			currentText += '\n' + word;
+	// 			line = word;
+	// 		} else {
+	// 			//continue same line
+	// 			currentText += word;
+	// 			line = testLine;
+	// 		}
+
+	// 		textObject.setText(currentText);
+
+	// 		let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
+	// 		sound.play({ volume: 0.05, rate: pitch });
+	// 		i++;
+	// 		this.scene.time.delayedCall(speed, typeNextWord);
+	// 	};
+
+	// 	typeNextWord();
+
+	// 	this.scene.time.addEvent({
+	// 		repeat: fullText.length - 1,
+	// 		delay: speed,
+	// 		callback: () => {
+	// 			textObject.text += fullText[i];
+	// 			i++;
+	// 			let pitch;
+	// 			if (speaker === '') {
+	// 				pitch = 1;
+	// 			} else {
+	// 				pitch = Phaser.Math.FloatBetween(0.7, 1.3);
+	// 			}
+	// 			//const sound = this.scene.sound.add('speechSound');
+	// 			sound.play({ volume: 0.05, rate: pitch });
+	// 			if (i === fullText.length && onComplete) {
+	// 				onComplete();
+	// 			}
+	// 		},
+	// 	});
+	// }
 }

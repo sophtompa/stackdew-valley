@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import Player from '../src/player.js';
+import DialogueManager from '../src/dialogueManager.js';
 import { database, userInventory } from '../src/dummydata.js';
 
 export default class FirstFloor extends Phaser.Scene {
@@ -25,9 +26,13 @@ export default class FirstFloor extends Phaser.Scene {
 		this.load.image('newMailIcon', 'assets/mail.png');
 		this.load.audio('mailSound', 'assets/yougotmail.mp3');
 		this.load.audio('harvestingSound', '../assets/harvest.wav');
+		this.load.audio('speechSound', '../assets/speechSound.wav');
 	}
 
 	create() {
+		//initialise dialogue manager
+		this.dialogue = new DialogueManager(this);
+
 		//create audio
 		this.harvestingSound = this.sound.add('harvestingSound');
 
@@ -43,8 +48,65 @@ export default class FirstFloor extends Phaser.Scene {
 			.setCollisionByProperty({ collide: true });
 		mapLayer.setPosition(0, 0);
 
-		this.player = new Player(this, 100, 180, 'playerSheet');
+		//spawn player in correct position depending on whether they've been to this scene before
+		if (!this.registry.get('firstFloorSceneTutorial')) {
+			this.player = new Player(this, 100, 180, 'playerSheet');
+		} else {
+			this.player = new Player(this, 545, 370, 'playerSheet');
+			//face player upwards like they've just come in the door
+
+			if (this.player.anims.isPlaying) {
+				this.player.anims.stop();
+			}
+			this.player.lastDirection = 'up';
+			this.player.setTexture('playerSheet').setFrame(8);
+			this.player.setFrame(8);
+		}
+
 		this.physics.add.collider(this.player, mapLayer);
+
+		if (!this.registry.get('firstFloorSceneTutorial')) {
+			this.registry.set('firstFloorSceneTutorial', true);
+			this.time.delayedCall(700, () => {
+				this.dialogue.startDialogue(
+					[
+						{
+							text: `Welcome ... to StackDew Valley.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Tip: Use arrow keys to move and spacebar to interact.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `It's almost 8:45 and time for the morning lecture.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `RISE AND SHINE CODERS!!!`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Tip: As a tutor, CorthNoders may contact you on your laptop.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Alternatively, why not pop outside to touch grass?`,
+							speaker: '',
+							color: '#1f451c',
+						},
+					],
+					null,
+					30,
+					345
+				);
+			});
+		}
 
 		// Email icon
 		//TODO: sort out images for the icons

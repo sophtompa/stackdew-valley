@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import dialogueManager from '../src/dialogueManager.js';
 
 export default class battleScene extends Phaser.Scene {
 	constructor() {
@@ -108,6 +109,9 @@ export default class battleScene extends Phaser.Scene {
 	}
 
 	doCutScene() {
+		//initialise dialogue manager function in this scene
+		this.dialogue = new dialogueManager(this);
+
 		//initial pan up to door of building
 		this.cameras.main.pan(
 			400,
@@ -117,16 +121,38 @@ export default class battleScene extends Phaser.Scene {
 			false,
 			(camera, progress) => {
 				// above callback checks to see if the first pan is finished
-				// then we pause to allow npc conversation welcome in building
+				// then we call dialogue function for conversation to welcome player in building
 				if (progress === 1) {
-					this.time.delayedCall(1800, () => {
-						this.doConversation();
+					//this.time.delayedCall(1800, () => {
+					this.dialogue.startDialogue(
+						[
+							// format here is text for the actual dialogue and the colour which helps denote player or npc is talking
+							{
+								text: `"Hello. I'm here about the job? I hope it doesn't involve chess cos I'm rubbish at it sorry. You probably want Holovko for that. He's a natural."`,
+								color: '#2c3e50',
+							},
+							{ text: `"Ah yes. Right this way!"`, color: '#502c2c' },
+							{ text: `"Uh ... thanks!"`, color: '#2c3e50' },
+							{ text: `"what if I keep talking?"`, color: '#2c3e50' },
+							{ text: `"and talking?"`, color: '#2c3e50' },
+							{ text: `"and talking?"`, color: '#2c3e50' },
+							{ text: `"seriously..."`, color: '#2c3e50' },
+							{ text: `"... can we go now?"`, color: '#2c3e50' },
+							{ text: `"I need the toilet."`, color: '#2c3e50' },
+							{
+								text: `"Whatever ... stay fresh, cheese bags."`,
+								color: '#2c3e50',
+							},
+						],
+						() => {
+							//this.time.delayedCall(8000, () => {
 
-						this.time.delayedCall(8000, () => {
 							this.cameras.main.pan(400, 224, 11000, 'Cubic.easeInOut');
 							this.doFootSteps();
-						});
-					});
+						},
+						50,
+						3200
+					);
 				}
 			}
 		);
@@ -184,190 +210,210 @@ export default class battleScene extends Phaser.Scene {
 		});
 	}
 
-	doConversation() {
-		//const panelWidth = 350;
-		const panelHeight = 35;
-		const panelPadding = 20;
-		const textPadding = 7;
-		const baseOffsetX = 50;
+	// code below has now been moved to its own dialogueManager file.
 
-		const lines = [
-			{ text: `"Hello. I'm here about the job?"`, color: '#2c3e50' },
-			{ text: `"Ah yes. Right this way!"`, color: '#502c2c' },
-			{ text: `"Uh ... thanks!"`, color: '#2c3e50' },
-		];
+	// doConversation() {
+	// 	//const panelWidth = 350;
+	// 	const panelHeight = 35;
+	// 	const panelPadding = 20;
+	// 	const textPadding = 7;
+	// 	const baseOffsetX = 50;
 
-		const panels = [];
-		const shadows = [];
-		const pointers = [];
-		const textObjects = [];
+	// 	const lines = [
+	// 		{
+	// 			text: `"Hello. I'm here about the job? bibbidy bobbidy dhfklsdh fksdhfksdfhk sdhsdkfjhs dkfsdhfkjsd hfksdj hfkdsjfhsdkh asasdasd asdasd asd asd asdasdasda asdasdasdas"`,
+	// 			color: '#2c3e50',
+	// 		},
+	// 		{ text: `"Ah yes. Right this way!"`, color: '#502c2c' },
+	// 		{ text: `"Uh ... thanks!"`, color: '#2c3e50' },
+	// 	];
 
-		let currentLine = 0;
+	// 	const panels = [];
+	// 	const shadows = [];
+	// 	const pointers = [];
+	// 	const textObjects = [];
 
-		const createPanel = (yPosition, lineText, textColor) => {
-			const borderRadius = 20;
-			const outlineColour = 0xb5c983;
-			const outlineStroke = 8;
-			const margin = 20;
+	// 	let currentLine = 0;
 
-			// temptext to calculate panel width
-			const tempText = this.add.text(0, 0, lineText, {
-				fontFamily: 'VT323',
-				fontSize: '20px',
-			});
-			const textWidth = tempText.width;
-			tempText.destroy();
+	// 	const createPanel = (yPosition, lineText, textColor) => {
+	// 		const borderRadius = 20;
+	// 		const outlineColour = 0xb5c983;
+	// 		const outlineStroke = 8;
+	// 		const margin = 20;
 
-			// padding calcs
-			const totalHorizontalPadding = textPadding * 2 + margin * 2;
-			const panelWidth = textWidth + totalHorizontalPadding;
-			const panelHeight = 35;
+	// 		// temptext to calculate panel width of 'unwrapped' text that could be too long for single panel
+	// 		const tempText = this.add.text(0, 0, lineText, {
+	// 			fontFamily: 'VT323',
+	// 			fontSize: '20px',
+	// 		});
+	// 		const textWidth = tempText.width;
+	// 		tempText.destroy();
 
-			// drop shadow for panel
-			const shadowOffset = 10;
-			const shadow = this.add.graphics();
-			// black shadow, 50% transparent
-			shadow.fillStyle(0x000000, 0.5);
-			shadow.fillRoundedRect(
-				panelPadding + shadowOffset + baseOffsetX,
-				yPosition + shadowOffset,
-				panelWidth,
-				panelHeight,
-				borderRadius
-			);
-			shadows.push(shadow);
+	// 		// padding calcs
+	// 		const totalHorizontalPadding = textPadding * 2 + margin * 2;
+	// 		let panelWidth = textWidth + totalHorizontalPadding + 10;
+	// 		const maxPanelWidth = 350;
+	// 		panelWidth = Math.min(panelWidth, maxPanelWidth);
 
-			// panel frame - outline and fill
-			const frame = this.add.graphics();
-			frame.lineStyle(outlineStroke, outlineColour, 1);
-			frame.strokeRoundedRect(
-				panelPadding + baseOffsetX,
-				yPosition,
-				panelWidth,
-				panelHeight,
-				borderRadius
-			);
-			frame.fillStyle(0xdee6ca, 1);
-			frame.fillRoundedRect(
-				panelPadding + baseOffsetX,
-				yPosition,
-				panelWidth,
-				panelHeight,
-				borderRadius
-			);
-			panels.push(frame);
+	// 		//panelHeight = tempText.height + textPadding * 2;
 
-			//triangle pointer to make it look like a speech bubble
-			const pointer = this.add.graphics();
-			pointer.fillStyle(0xb5c983, 1);
+	// 		// temptext2 measured again to see if we need more than one line once he have wrapping in place
+	// 		const tempText2 = this.add.text(0, 0, lineText, {
+	// 			fontFamily: 'VT323',
+	// 			fontSize: '20px',
+	// 			wordWrap: { width: panelWidth - totalHorizontalPadding },
+	// 		});
+	// 		const wrappedTextHeight = tempText2.height;
+	// 		tempText2.destroy();
 
-			if (textColor === '#2c3e50') {
-				// left side triangle
-				pointer.fillTriangle(
-					panelPadding - 15 + baseOffsetX,
-					yPosition + 30,
-					panelPadding + baseOffsetX,
-					yPosition + 10,
-					panelPadding + baseOffsetX,
-					yPosition + 30,
-					borderRadius
-				);
-			} else {
-				//right side triangle
+	// 		const panelHeight = wrappedTextHeight + textPadding * 2;
 
-				pointer.fillTriangle(
-					panelPadding + panelWidth + -5 + baseOffsetX,
-					yPosition + 35,
-					panelPadding + panelWidth + 2 + baseOffsetX,
-					yPosition + 22,
-					panelPadding + panelWidth + 10 + baseOffsetX,
-					yPosition + 35
-				);
-			}
+	// 		// drop shadow for panel
+	// 		const shadowOffset = 10;
+	// 		const shadow = this.add.graphics();
+	// 		// black shadow, 50% transparent
+	// 		shadow.fillStyle(0x000000, 0.5);
+	// 		shadow.fillRoundedRect(
+	// 			panelPadding + shadowOffset + baseOffsetX,
+	// 			yPosition + shadowOffset,
+	// 			panelWidth,
+	// 			panelHeight,
+	// 			borderRadius
+	// 		);
+	// 		shadows.push(shadow);
 
-			pointers.push(pointer);
+	// 		// panel frame - outline and fill
+	// 		const frame = this.add.graphics();
+	// 		frame.lineStyle(outlineStroke, outlineColour, 1);
+	// 		frame.strokeRoundedRect(
+	// 			panelPadding + baseOffsetX,
+	// 			yPosition,
+	// 			panelWidth,
+	// 			panelHeight,
+	// 			borderRadius
+	// 		);
+	// 		frame.fillStyle(0xdee6ca, 1);
+	// 		frame.fillRoundedRect(
+	// 			panelPadding + baseOffsetX,
+	// 			yPosition,
+	// 			panelWidth,
+	// 			panelHeight,
+	// 			borderRadius
+	// 		);
+	// 		panels.push(frame);
 
-			//text object placed inside panel
-			const text = this.add.text(
-				panelPadding + textPadding + margin + baseOffsetX,
-				yPosition + textPadding,
-				'',
-				{
-					fontFamily: 'VT323',
-					fontSize: '20px',
-					// fontStyle: 'bold',
-					color: '#2c3e50',
-					wordWrap: { width: panelWidth - totalHorizontalPadding },
-				}
-			);
-			textObjects.push(text);
-		};
+	// 		//triangle pointer to make it look like a speech bubble
+	// 		const pointer = this.add.graphics();
+	// 		pointer.fillStyle(0xb5c983, 1);
 
-		const showNextLine = () => {
-			if (currentLine < lines.length) {
-				const yPosition = 3200 + currentLine * (panelHeight + 10);
-				createPanel(
-					yPosition,
-					lines[currentLine].text,
-					lines[currentLine].color
-				);
+	// 		if (textColor === '#2c3e50') {
+	// 			// left side triangle
+	// 			pointer.fillTriangle(
+	// 				panelPadding - 15 + baseOffsetX,
+	// 				yPosition + 30,
+	// 				panelPadding + baseOffsetX,
+	// 				yPosition + 10,
+	// 				panelPadding + baseOffsetX,
+	// 				yPosition + 30,
+	// 				borderRadius
+	// 			);
+	// 		} else {
+	// 			//right side triangle
 
-				const thisLineIndex = currentLine;
-				const textObj = textObjects[thisLineIndex];
-				const panelObj = panels[thisLineIndex];
-				const shadowObj = shadows[thisLineIndex];
-				const pointerObj = pointers[thisLineIndex];
+	// 			pointer.fillTriangle(
+	// 				panelPadding + panelWidth + -5 + baseOffsetX,
+	// 				yPosition + 35,
+	// 				panelPadding + panelWidth + 2 + baseOffsetX,
+	// 				yPosition + 22,
+	// 				panelPadding + panelWidth + 10 + baseOffsetX,
+	// 				yPosition + 35
+	// 			);
+	// 		}
 
-				textObjects[currentLine].setStyle({ color: lines[currentLine].color });
-				textObjects[currentLine].setText('');
+	// 		pointers.push(pointer);
 
-				this.typeText(textObj, lines[thisLineIndex].text, () => {
-					this.time.delayedCall(1250, () => {
-						this.tweens.add({
-							targets: [panelObj, textObj, shadowObj, pointerObj],
-							alpha: 0,
-							duration: 1000,
-							ease: 'Power2',
-							onComplete: () => {
-								panelObj.destroy();
-								shadowObj.destroy();
-							},
-						});
-					});
-				});
+	// 		//actual text object placed inside panel
+	// 		const text = this.add.text(
+	// 			panelPadding + textPadding + margin + baseOffsetX,
+	// 			yPosition + textPadding,
+	// 			'',
+	// 			{
+	// 				fontFamily: 'VT323',
+	// 				fontSize: '20px',
+	// 				// fontStyle: 'bold',
+	// 				color: '#2c3e50',
+	// 				wordWrap: { width: panelWidth - totalHorizontalPadding },
+	// 			}
+	// 		);
+	// 		textObjects.push(text);
+	// 	};
 
-				currentLine++;
-				this.time.delayedCall(2200, showNextLine, [], this);
-			} else {
-				this.doFootSteps();
-			}
-		};
+	// 	const showNextLine = () => {
+	// 		if (currentLine < lines.length) {
+	// 			const yPosition = 3200 + currentLine * (panelHeight + 10);
+	// 			createPanel(
+	// 				yPosition,
+	// 				lines[currentLine].text,
+	// 				lines[currentLine].color
+	// 			);
 
-		showNextLine();
+	// 			const thisLineIndex = currentLine;
+	// 			const textObj = textObjects[thisLineIndex];
+	// 			const panelObj = panels[thisLineIndex];
+	// 			const shadowObj = shadows[thisLineIndex];
+	// 			const pointerObj = pointers[thisLineIndex];
 
-		//const fadeOutText = () => {};
-	}
+	// 			textObjects[currentLine].setStyle({ color: lines[currentLine].color });
+	// 			textObjects[currentLine].setText('');
 
-	typeText(textObject, fullText, onComplete, speed = 50) {
-		let i = 0;
-		const sound = this.sound.add('speechSound');
+	// 			// const textLength = lines[thisLineIndex].text.length;
+	// 			// const typingSpeed = 50;
+	// 			// const baseDelay = 1250;
+	// 			// const typingDelay = baseDelay + textLength * typingSpeed;
 
-		this.time.addEvent({
-			repeat: fullText.length - 1,
-			delay: speed,
-			callback: () => {
-				textObject.text += fullText[i];
-				i++;
-				const pitchChange = Phaser.Math.FloatBetween(0.7, 1.3);
-				const sound = this.sound.add('speechSound');
-				sound.play({
-					volume: 0.05,
-					rate: pitchChange,
-				});
-				if (i === fullText.length && onComplete) {
-					onComplete();
-				}
-			},
-		});
-	}
+	// 			this.typeText(textObj, lines[thisLineIndex].text, () => {
+	// 				this.time.delayedCall(1250, () => {
+	// 					this.tweens.add({
+	// 						targets: [panelObj, textObj, shadowObj, pointerObj],
+	// 						alpha: 0,
+	// 						duration: 1000,
+	// 						ease: 'Power2',
+	// 						onComplete: () => {
+	// 							panelObj.destroy();
+	// 							shadowObj.destroy();
+	// 							currentLine++;
+	// 							showNextLine();
+	// 						},
+	// 					});
+	// 				});
+	// 			});
+	// 		} else {
+	// 			this.doFootSteps();
+	// 		}
+	// 	};
+	// 	showNextLine();
+	// }
+
+	// typeText(textObject, fullText, onComplete, speed = 50) {
+	// 	let i = 0;
+	// 	const sound = this.sound.add('speechSound');
+
+	// 	this.time.addEvent({
+	// 		repeat: fullText.length - 1,
+	// 		delay: speed,
+	// 		callback: () => {
+	// 			textObject.text += fullText[i];
+	// 			i++;
+	// 			const pitchChange = Phaser.Math.FloatBetween(0.7, 1.3);
+	// 			const sound = this.sound.add('speechSound');
+	// 			sound.play({
+	// 				volume: 0.05,
+	// 				rate: pitchChange,
+	// 			});
+	// 			if (i === fullText.length && onComplete) {
+	// 				onComplete();
+	// 			}
+	// 		},
+	// 	});
+	// }
 }

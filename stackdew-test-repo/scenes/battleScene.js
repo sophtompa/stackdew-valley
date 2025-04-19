@@ -128,19 +128,46 @@ export default class battleScene extends Phaser.Scene {
 						[
 							// format here is text for the actual dialogue and the colour which helps denote player or npc is talking
 							{
-								text: `"Hello. I'm here about the job? I hope it doesn't involve chess cos I'm rubbish at it sorry. You probably want Holovko for that. He's a natural."`,
+								text: `"Hello. I'm here about the job? I hope it doesn't involve chess cos I'm rubbish at it, sorry. You probably want Holovko for that. The boy's a natural."`,
+								speaker: 'player',
 								color: '#2c3e50',
 							},
-							{ text: `"Ah yes. Right this way!"`, color: '#502c2c' },
-							{ text: `"Uh ... thanks!"`, color: '#2c3e50' },
-							{ text: `"what if I keep talking?"`, color: '#2c3e50' },
-							{ text: `"and talking?"`, color: '#2c3e50' },
-							{ text: `"and talking?"`, color: '#2c3e50' },
-							{ text: `"seriously..."`, color: '#2c3e50' },
-							{ text: `"... can we go now?"`, color: '#2c3e50' },
-							{ text: `"I need the toilet."`, color: '#2c3e50' },
+							{
+								text: `"Ah yes. Right this way!"`,
+								speaker: 'npc',
+								color: '#502c2c',
+							},
+							{ text: `"Uh ... thanks!"`, speaker: 'player', color: '#2c3e50' },
+							{
+								text: `"what if I keep talking?"`,
+								speaker: 'player',
+								color: '#2c3e50',
+							},
+							{ text: `"and talking?"`, speaker: 'player', color: '#2c3e50' },
+
+							{
+								text: `"... can we go now?"`,
+								speaker: 'npc',
+								color: '#502c2c',
+							},
+							{
+								text: `"I need the toilet."`,
+								speaker: 'player',
+								color: '#2c3e50',
+							},
+							{
+								text: `"I guess I'll entertain myself with a long bit of text while you do a pre-interview anxiety-based butt-throw-up."`,
+								speaker: 'npc',
+								color: '#502c2c',
+							},
+							{
+								text: `"Ew, I smell spicy tummy mud."`,
+								speaker: 'npc',
+								color: '#502c2c',
+							},
 							{
 								text: `"Whatever ... stay fresh, cheese bags."`,
+								speaker: 'player',
 								color: '#2c3e50',
 							},
 						],

@@ -27,7 +27,8 @@ export default class DialogueManager {
 				yPosition,
 				this.lines[this.currentLine].text,
 				this.lines[this.currentLine].color,
-				xPosition
+				xPosition,
+				this.lines[this.currentLine].speaker
 			);
 
 			const index = this.currentLine;
@@ -60,12 +61,17 @@ export default class DialogueManager {
 		}
 	}
 
-	createPanel(yPosition, lineText, textColor, xPosition = 50) {
+	createPanel(
+		yPosition,
+		lineText,
+		textColor,
+		xPosition = 50,
+		speaker = 'tutorial'
+	) {
 		const { add, time } = this.scene;
 
 		const panelPadding = 20;
 		const textPadding = 7;
-		//const baseOffsetX = 50;
 		const borderRadius = 20;
 		const outlineColour = 0xb5c983;
 		const outlineStroke = 8;
@@ -126,28 +132,39 @@ export default class DialogueManager {
 		// pointer
 		const pointer = add.graphics();
 		pointer.fillStyle(0xb5c983, 1);
-		if (textColor === '#2c3e50') {
+
+		//find bottom of panel for speech bubble pointer
+		const bottomY = yPosition + panelHeight - 5;
+
+		//speech bubble pointer pointing left for player speech
+		if (speaker === 'player') {
 			pointer.fillTriangle(
-				panelPadding - 15 + xPosition,
-				yPosition + 30,
+				//bottom left of triangle (essentially the pointer)
+				panelPadding - 25 + xPosition,
+				bottomY + 10,
+				//top of triangle
 				panelPadding + xPosition,
-				yPosition + 10,
+				bottomY - 15,
+				//bottom right of triangle
 				panelPadding + xPosition,
-				yPosition + 30
+				bottomY
 			);
-		} else {
+			//speech bubble pointer pointing right for npc speech
+		} else if (speaker === 'npc') {
 			pointer.fillTriangle(
-				panelPadding + panelWidth - 5 + xPosition,
-				yPosition + 35,
-				panelPadding + panelWidth + 2 + xPosition,
-				yPosition + 22,
-				panelPadding + panelWidth + 10 + xPosition,
-				yPosition + 35
+				//bottom right of triangle (essentially the pointer)
+				panelPadding + panelWidth + 25 + xPosition,
+				bottomY + 10,
+				// top of triangle
+				panelPadding + panelWidth + xPosition,
+				bottomY - 15,
+				//bottom left of triangle
+				panelPadding + panelWidth + xPosition,
+				bottomY
 			);
-		}
+		} else if (speaker === 'narrator' || 'tutorial') pointer.setVisible(false);
 		this.pointers.push(pointer);
 
-		// text
 		const text = add.text(
 			panelPadding + textPadding + margin + xPosition,
 			yPosition + textPadding,
@@ -164,6 +181,15 @@ export default class DialogueManager {
 
 	typeText(textObject, fullText, onComplete, speed = 50) {
 		let i = 0;
+		const soundKey =
+			{
+				player: 'speechSound',
+				npc: 'speechSound',
+				narrator: 'narratorSound',
+				tutorial: 'tutorialSound',
+			}[this.lines[this.currentLine].speaker] || 'speechSound';
+
+		const sound = this.scene.sound.add(soundKey);
 		this.scene.time.addEvent({
 			repeat: fullText.length - 1,
 			delay: speed,
@@ -171,7 +197,7 @@ export default class DialogueManager {
 				textObject.text += fullText[i];
 				i++;
 				const pitch = Phaser.Math.FloatBetween(0.7, 1.3);
-				const sound = this.scene.sound.add('speechSound');
+				//const sound = this.scene.sound.add('speechSound');
 				sound.play({ volume: 0.05, rate: pitch });
 				if (i === fullText.length && onComplete) {
 					onComplete();

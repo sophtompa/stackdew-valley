@@ -36,8 +36,8 @@ export default class RenderInventory {
 				const shadow = add.sprite(invX + 4, invY + 4, 'devlingImage');
 				shadow.setTint(0x000000);
 				shadow.setAlpha(0.5);
-				sprite.setDepth(1);
-				shadow.setDepth(0);
+				sprite.setDepth(1002);
+				shadow.setDepth(1001);
 
 				this.devlingSprites[devling.name] = sprite;
 				this.devlingShadowSprites[devling.name] = shadow;

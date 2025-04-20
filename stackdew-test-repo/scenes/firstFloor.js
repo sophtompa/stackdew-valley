@@ -72,6 +72,7 @@ export default class FirstFloor extends Phaser.Scene {
 
 		this.physics.add.collider(this.player, mapLayer);
 
+		//check to see if this is our first time i nthis scene and if so, play some tutorial dialogue
 		if (!this.registry.get('firstFloorSceneTutorial')) {
 			this.registry.set('firstFloorSceneTutorial', true);
 			this.time.delayedCall(700, () => {
@@ -239,6 +240,19 @@ export default class FirstFloor extends Phaser.Scene {
 					const devling = database[i];
 					userInventory.push(devling);
 					this.renderInventory.render(userInventory);
+					// this.dialogue.startDialogue(
+					// 	[
+					// 		{
+					// 			text: `#23`,
+					// 			speaker: '',
+					// 			color: '#1f451c',
+					// 			persist: true,
+					// 		},
+					// 	],
+					// 	() => {},
+					// 	5,
+					// 	33
+					// );
 				}
 				console.log('devlings collected', userInventory);
 			}

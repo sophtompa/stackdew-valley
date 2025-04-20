@@ -12,6 +12,13 @@ export default class DialogueManager {
 	}
 
 	startDialogue(lines, onComplete, x, y) {
+		if (this.currentLine > 0 && this.currentLine < this.lines.length) {
+			//check to see if dialogue is already running
+			if (this.isDialogueRunning()) {
+				return;
+			}
+		}
+
 		this.resetDialogue();
 		this.lines = lines;
 		this.onComplete = onComplete;
@@ -29,14 +36,30 @@ export default class DialogueManager {
 		}
 	}
 
+	isDialogueRunning() {
+		return this.currentLine < this.lines.length;
+	}
+
 	showNextLine() {
 		const xPosition = this.dialogueX;
 		const yPosition = this.dialogueY;
-
 		if (this.currentLine < this.lines.length) {
+			const currentLineData = this.lines[this.currentLine];
+			let lineText = currentLineData.text;
+
+			// Handle placeholder text like #16 safely
+			let isPlaceHolder = false;
+			const placeholderMatch = lineText.match(/^#(\d+)$/);
+			if (placeholderMatch) {
+				const charCount = parseInt(placeholderMatch[1], 10);
+				lineText = '\u00A0'.repeat(charCount); // Display blank spaces instead of #16
+				isPlaceHolder = true;
+			}
+
+			// Create panel and text even for placeholder
 			this.createPanel(
 				yPosition,
-				this.lines[this.currentLine].text,
+				lineText,
 				this.lines[this.currentLine].color,
 				xPosition,
 				this.lines[this.currentLine].speaker
@@ -48,12 +71,9 @@ export default class DialogueManager {
 			const shadowObj = this.shadows[index];
 			const pointerObj = this.pointers[index];
 
-			// check to see if we're SHOUTING
-			const currentLineData = this.lines[this.currentLine];
-			const isShouting =
-				currentLineData.text === currentLineData.text.toUpperCase();
+			const isShouting = !isPlaceHolder && lineText === lineText.toUpperCase();
 
-			//if SHOUTING add a tween to the text to make it jiggle
+			// If SHOUTING, add a tween to make the text jiggle
 			if (isShouting) {
 				this.shoutTween = this.scene.tweens.add({
 					targets: textObj,
@@ -61,30 +81,27 @@ export default class DialogueManager {
 						from: textObj.x - 2,
 						to: textObj.x + 2,
 					},
-					// y: {
-					// 	from: textObj.y - 1,
-					// 	to: textObj.y + 1,
-					// },
 					duration: 50,
 					yoyo: true,
 					repeat: -1,
 				});
 
-				//jiggle speech bubble panel if SHOUTING
+				// You can also make the panel jiggle if you want
 				// this.scene.tweens.add({
-				// 	targets: panelObj,
-				// 	x: { from: panelObj.x - 2, to: panelObj.x + 2 },
-				// 	y: { from: panelObj.y - 1, to: panelObj.y + 1 },
-				// 	duration: 50,
-				// 	yoyo: true,
-				// 	repeat: -1,
+				//     targets: panelObj,
+				//     x: { from: panelObj.x - 2, to: panelObj.x + 2 },
+				//     y: { from: panelObj.y - 1, to: panelObj.y + 1 },
+				//     duration: 50,
+				//     yoyo: true,
+				//     repeat: -1,
 				// });
 			}
 
 			textObj.setStyle({ color: this.lines[index].color });
 			textObj.setText('');
 
-			this.typeText(textObj, this.lines[index].text, () => {
+			// Type the text for both placeholder and regular dialogue
+			this.typeText(textObj, lineText, () => {
 				if (this.lines[index].persist) {
 					return;
 				}
@@ -104,6 +121,15 @@ export default class DialogueManager {
 					});
 				});
 			});
+
+			// If it's a placeholder, we just return to move to the next line
+			if (isPlaceHolder) {
+				if (this.currentLine < this.lines.length - 1) {
+					this.currentLine++;
+					this.showNextLine();
+				}
+				return;
+			}
 		} else {
 			if (this.onComplete) {
 				if (this.shoutTween) {
@@ -114,6 +140,106 @@ export default class DialogueManager {
 			}
 		}
 	}
+
+	// showNextLine() {
+	// 	const xPosition = this.dialogueX;
+	// 	const yPosition = this.dialogueY;
+	// 	if (this.currentLine < this.lines.length) {
+	// 		const currentLineData = this.lines[this.currentLine];
+	// 		let lineText = currentLineData.text;
+
+	// 		// Placeholder detection for empty panel UI use.
+	// 		let isPlaceHolder = false;
+	// 		const placeholderMatch = lineText.match(/^#(\d+)$/);
+	// 		if (placeholderMatch) {
+	// 			const charCount = parseInt(placeholderMatch[1], 10);
+	// 			lineText = '\u00A0'.repeat(charCount);
+	// 			isPlaceHolder = true;
+
+	// 			//update the 'empty' line to parse with dialogue function
+	// 			// this.lines[this.currentLine].text = lineText;
+	// 		}
+
+	// 		this.createPanel(
+	// 			yPosition,
+	// 			this.lines[this.currentLine].text,
+	// 			this.lines[this.currentLine].color,
+	// 			xPosition,
+	// 			this.lines[this.currentLine].speaker
+	// 		);
+
+	// 		const index = this.currentLine;
+	// 		const textObj = this.textObjects[index];
+	// 		const panelObj = this.panels[index];
+	// 		const shadowObj = this.shadows[index];
+	// 		const pointerObj = this.pointers[index];
+
+	// 		const onComplete = () => {
+	// 			if (this.lines[index].persist) {
+	// 				return;
+	// 			}
+	// 		}
+	// 		const isShouting =
+	// 			!isPlaceHolder &&
+	// 			currentLineData.text === currentLineData.text.toUpperCase();
+
+	// 		//if SHOUTING add a tween to the text to make it jiggle
+	// 		if (isShouting) {
+	// 			this.shoutTween = this.scene.tweens.add({
+	// 				targets: textObj,
+	// 				x: {
+	// 					from: textObj.x - 2,
+	// 					to: textObj.x + 2,
+	// 				},
+	// 				duration: 50,
+	// 				yoyo: true,
+	// 				repeat: -1,
+	// 			});
+
+	// 			//jiggle speech bubble panel if SHOUTING
+	// 			// this.scene.tweens.add({
+	// 			// 	targets: panelObj,
+	// 			// 	x: { from: panelObj.x - 2, to: panelObj.x + 2 },
+	// 			// 	y: { from: panelObj.y - 1, to: panelObj.y + 1 },
+	// 			// 	duration: 50,
+	// 			// 	yoyo: true,
+	// 			// 	repeat: -1,
+	// 			// });
+	// 		}
+
+	// 		textObj.setStyle({ color: this.lines[index].color });
+	// 		textObj.setText('');
+
+	// 		this.typeText(textObj, this.lines[index].text, () => {
+	// 			if (this.lines[index].persist) {
+	// 				return;
+	// 			}
+
+	// 			this.scene.time.delayedCall(1250, () => {
+	// 				this.scene.tweens.add({
+	// 					targets: [panelObj, textObj, shadowObj, pointerObj],
+	// 					alpha: 0,
+	// 					duration: 1000,
+	// 					ease: 'Power2',
+	// 					onComplete: () => {
+	// 						panelObj.destroy();
+	// 						shadowObj.destroy();
+	// 						this.currentLine++;
+	// 						this.showNextLine();
+	// 					},
+	// 				});
+	// 			});
+	// 		});
+	// 	} else {
+	// 		if (this.onComplete) {
+	// 			if (this.shoutTween) {
+	// 				this.shoutTween.stop();
+	// 				this.shoutTween = null;
+	// 			}
+	// 			this.onComplete();
+	// 		}
+	// 	}
+	// }
 
 	createPanel(
 		yPosition,
@@ -285,11 +411,18 @@ export default class DialogueManager {
 		);
 
 		let i = 0;
+		let currentText = '';
+
 		const typeNextChar = () => {
+			if (!textObject || !wrappedText) {
+				return;
+			}
+
 			if (i < wrappedText.length) {
 				// source of potential crash to do with bitmapped text
 				// textObject.text += wrappedText[i];
-				textObject.setText(textObject.text + wrappedText[i]);
+				currentText += wrappedText[i];
+				textObject.setText(currentText);
 				i++;
 
 				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);

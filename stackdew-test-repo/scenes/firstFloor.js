@@ -227,7 +227,10 @@ export default class FirstFloor extends Phaser.Scene {
 					userInventory.push(devling);
 
 					//create devling visuals
-					const sprite = this.add.sprite(50 + i * 40, 50, 'devlingImage');
+					const invX = 50 + i * 40;
+					const invY = 50;
+					const sprite = this.add.sprite(invX, invY, 'devlingImage');
+					//this.dialogue.createPanel(invY, '', '#000000', invX, '');
 					sprite.setInteractive();
 					sprite.setVisible(true);
 					this.emailIcon.setVisible(false);

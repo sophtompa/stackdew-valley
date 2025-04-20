@@ -42,6 +42,10 @@ export default class farmScene extends Phaser.Scene {
 
 		//initialise dialogue manager
 		this.dialogue = new DialogueManager(this);
+		this.isDialogueRunning = false;
+
+		//reset plot offset for planting later
+		let plotOffset = 0;
 
 		//test to see if the scene has ran before and if not, play a tutorial
 		if (!this.registry.get('farmSceneTutorial')) {
@@ -55,12 +59,12 @@ export default class farmScene extends Phaser.Scene {
 							color: '#1f451c',
 						},
 						{
-							text: `Tip: Press Space to interact with it.`,
+							text: `Press Space to interact with it.`,
 							speaker: '',
 							color: '#1f451c',
 						},
 						{
-							text: `Tip: You can also head back into the farmhouse or into StackDew Valley.`,
+							text: `You can also head back into the farmhouse or into StackDew Valley.`,
 							speaker: '',
 							color: '#1f451c',
 						},
@@ -97,61 +101,67 @@ export default class farmScene extends Phaser.Scene {
 		this.plantTriggered = false;
 
 		//create devling sprite images
-		//inventory:
+		//inventory & shadow:
 		this.devlingSprites = {};
+		this.devlingShadowSprites = {};
 		//farm dirt patch:
 		this.plantedDevlingSprites = {};
 
-		//function to render inventory. To be called on each scene change?
+		//function to render inventory to be called on each dvling state change
 		this.renderInventory = () => {
-			//remove existing inventory UI
-			for (const name in this.devlingSprites) {
-				if (this.devlingSprites[name]) {
-					this.devlingSprites[name].destroy();
-				}
-			}
-			//remove existing dirt patch UI
-			for (const name in this.plantedDevlingSprites) {
-				if (this.plantedDevlingSprites[name]) {
-					this.plantedDevlingSprites[name].destroy();
-				}
-			}
+			//cleanup existing ui
+			plotOffset = 0;
+			//inventory devlings & shadow
+			Object.values(this.devlingSprites).forEach((sprite) => sprite.destroy());
+			Object.values(this.devlingShadowSprites).forEach((shadow) =>
+				shadow.destroy()
+			);
+			//also planted devlings
+			Object.values(this.plantedDevlingSprites).forEach((sprite) =>
+				sprite.destroy()
+			);
 
-			//user inventory
-			// const savedInventory = localStorage.getItem('userInventory');
-			// if(savedInventory) {
-			// 	userInventory = JSON.parse(savedInventory);
-			// }
+			this.devlingSprites = {};
+			this.devlingShadowSprites = {};
+			this.plantedDevlingSprites = {};
 
-			//set inventory coordinates
+			//set inventory coordinates top left
 			let invX = 50;
 			let invY = 50;
+			let plotX = 500;
+			let plotY = 70;
 
 			userInventory.forEach((devling) => {
-				// Only show devlings that are not planted OR are fully grown in inventory
+				// Inventory slots: Only show devlings in INV that are not planted OR are fully groww
 				if (!devling.isPlanted || devling.isGrown) {
 					const sprite = this.add.sprite(invX, invY, 'devlingImage');
-					sprite.setInteractive();
-					sprite.setVisible(true);
-					this.devlingSprites[devling.name] = sprite;
-					invX += 40;
+					//make 2nd copy of devlingsprite for drop shadow, make sure its behind devlingsprite
+					const shadow = this.add.sprite(invX + 4, invY + 4, 'devlingImage');
+					shadow.setTint(0x000000);
+					shadow.setAlpha(0.5);
+					sprite.setDepth(1);
+					shadow.setDepth(0);
 
-					//Only show devling that are planted
-					if (
-						devling.isPlanted &&
-						devling.plantX !== undefined &&
-						devling.plantY !== undefined
-					) {
-						const plantedSprite = this.add.sprite(
-							devling.plantX,
-							devling.plantY,
-							'devlingImage'
-						);
-						plantedSprite.setInteractive();
-						plantedSprite.setVisible(true);
-						this.plantedDevlingSprites[devling.name] = plantedSprite;
-						invY += 40;
+					this.devlingSprites[devling.name] = sprite;
+					this.devlingShadowSprites[devling.name] = shadow;
+					invX += 40;
+				}
+				//Plant Bed: Only show devlings that are planted or watered
+				if (devling.isPlanted && !devling.isGrown) {
+					if (devling.plantX === undefined || devling.plantY === undefined) {
+						const row = Math.floor(plotOffset / 3);
+						const col = plotOffset % 3;
+						devling.plantX = plotX + col * 62;
+						devling.plantY = plotY + row * 65;
 					}
+					plotOffset++;
+
+					const plantedSprite = this.add.sprite(
+						devling.plantX,
+						devling.plantY,
+						'devlingImage'
+					);
+					this.plantedDevlingSprites[devling.name] = plantedSprite;
 				}
 			});
 		};
@@ -172,25 +182,9 @@ export default class farmScene extends Phaser.Scene {
 		propsLayer.setCollisionByProperty({ collide: true });
 		plotsLayer.setCollisionByProperty({ collide: true });
 
-		//show collision area on tilemap
-		// const debugGraphics = this.add.graphics().setAlpha(0.75);
-		// propsLayer.renderDebug(debugGraphics, {
-		// 	tileColor: null,
-		// 	collidingTileColor: new Phaser.Display.Color(255, 0, 0, 255),
-		// });
-		// plotsLayer.renderDebug(debugGraphics, {
-		// 	tileColor: null,
-		// 	collidingTileColor: new Phaser.Display.Color(0, 255, 0, 255),
-		// });
-
-		// const mapLayer = map.createLayer('props', tileset, -250, -50);
-		// mapLayer.setCollisionByProperty({ collide: true });
-		//mapLayer.setScale(0.6);
-
 		this.player = new Player(this, 275, 300, 'playerSheet');
 		this.physics.add.collider(this.player, propsLayer);
 		this.physics.add.collider(this.player, plotsLayer);
-		// this.physics.add.collider(this.player, mapLayer);
 
 		this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 		this.input.keyboard.enabled = true;
@@ -215,22 +209,12 @@ export default class farmScene extends Phaser.Scene {
 			footHeight
 		);
 
-		//debug playerBounds for collision
-		// this.debugGraphics = this.add.graphics();
-		// this.debugGraphics.lineStyle(1, 0x00ff00);
-		// this.debugRect = this.debugGraphics.strokeRectShape(playerBounds);
-		// this.debugGraphics.clear();
-		// this.debugGraphics.lineStyle(1, 0x00ff00);
-		// this.debugGraphics.strokeRectShape(playerBounds);
-
 		//FRONT DOOR requires
 		if (
 			Phaser.Geom.Intersects.RectangleToRectangle(
 				playerBounds,
 				this.frontDoorTrigger.getBounds()
 			)
-			// &&
-			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			this.moveScene('firstFloor');
 		}
@@ -241,8 +225,6 @@ export default class farmScene extends Phaser.Scene {
 				playerBounds,
 				this.toOverworldTrigger.getBounds()
 			)
-			// &&
-			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			this.moveScene('overworldScene');
 		}
@@ -259,8 +241,12 @@ export default class farmScene extends Phaser.Scene {
 			)
 		);
 
-		if (isOverlappingPlot && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-			//check user has devlings to plant or water (need to factor in location later? so that correct devling is being watered)
+		if (
+			isOverlappingPlot &&
+			Phaser.Input.Keyboard.JustDown(this.spaceKey) &&
+			!this.isDialogueRunning
+		) {
+			//check user has devlings to plant or water
 			const hasUnplanted = userInventory.some(
 				(devling) => !devling.isPlanted && !devling.isGrown
 			);
@@ -271,69 +257,43 @@ export default class farmScene extends Phaser.Scene {
 				(devling) => devling.isPlanted && devling.isWatered
 			);
 
-			// for(let i = 0; i < userInventory.length; i++) {
-			// 	if(userInventory[i].isPlanted && userInventory[i].isWatered) {
-			// 		userInventory[i].isGrown = true;
-			// 		console.log(userInventory[i].name, "ready to harvest")
-			// 	}
-			// }
-
 			const hasGrown = userInventory.some((devling) => devling.isGrown);
+			this.renderInventory();
 
-			//If unplanted, we plant
+			//if unplanted, we plant
 			if (hasUnplanted) {
 				for (let i = 0; i < userInventory.length; i++) {
 					if (userInventory[i].isPlanted === false) {
 						userInventory[i].isPlanted = true;
 
-						//Set devling to visible in inventory when grown and harvested
-						const sprite = this.devlingSprites[userInventory[i].name];
-						let plantedSprite =
-							this.plantedDevlingSprites[userInventory[i].name];
-						if (i < 3) {
-							plantedSprite = this.add.sprite(500 + i * 62, 70, 'devlingImage');
-							//Creating x and y coordinated for planted sprite
-							userInventory[i].plantX = plantedSprite.x;
-							userInventory[i].plantY = plantedSprite.y;
-
-							plantedSprite.setInteractive();
-							plantedSprite.setVisible(true);
-							this.plantedDevlingSprites[userInventory[i].name] = plantedSprite;
-							this.plantingSound.play();
-						}
-						if (i > 2) {
-							plantedSprite = this.add.sprite(
-								500 + (i - 3) * 62,
-								135,
-								'devlingImage'
-							);
-							plantedSprite.setInteractive();
-							plantedSprite.setVisible(true);
-							this.plantedDevlingSprites[userInventory[i].name] = plantedSprite;
-							this.plantingSound.play();
-						}
-
-						console.log('devling sprites', this.devlingSprites);
-						if (sprite) {
-							sprite.setVisible(false);
-
-							console.log('sprite removed');
-						}
-
-						if (plantedSprite) {
-							plantedSprite.setVisible(true);
-
-							console.log('sprite planted');
-						}
-
 						localStorage.setItem(
 							'userInventory',
 							JSON.stringify(userInventory)
 						);
+						this.plantingSound.play();
 						console.log('planting', userInventory[i]);
+						this.renderInventory();
 						break;
 					}
 				}
+			} else if (!hasUnplanted && !hasUnwatered && !hasGrown && !grown) {
+				//no devlings to plant/water/harvest
+				this.dialogue.startDialogue(
+					[
+						{
+							text: `Nothing to do here right now...`,
+							speaker: '',
+							color: '#1f451c',
+						},
+					],
+					() => {
+						//reset isDialogueRunning after the dialogue is complete via callback
+						this.isDialogueRunning = false;
+					},
+					385,
+					20
+				);
+				this.isDialogueRunning = true;
 			}
 
 			//If all planted and not watered, we water
@@ -348,6 +308,7 @@ export default class farmScene extends Phaser.Scene {
 						this.wateringSound.play({ volume: 0.5 });
 						//this.jiggleSprite(plantedSprite[userInventory[i].name]);
 						console.log('watering', userInventory[i].name);
+						this.renderInventory();
 						break;
 					}
 				}
@@ -361,20 +322,12 @@ export default class farmScene extends Phaser.Scene {
 						userInventory[i].isPlanted = false;
 						userInventory[i].isWatered = false;
 
-						//Set devling to visible in inventory when grown and harvested
-						const sprite = this.devlingSprites[userInventory[i].name];
-						let plantedSprite =
-							this.plantedDevlingSprites[userInventory[i].name];
-						if (sprite) {
-							sprite.setVisible(true);
-							plantedSprite.setVisible(false);
-							this.harvestingSound.play();
-						}
-
 						console.log(
 							userInventory[i].name,
 							'has grown and has been harvested!'
 						);
+						this.harvestingSound.play();
+						this.renderInventory();
 						break;
 					}
 				}

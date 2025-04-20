@@ -21,6 +21,14 @@ export default class DialogueManager {
 		this.showNextLine();
 	}
 
+	finishDialogue() {
+		//trigger onComplete when dialogue finishes typing on screen
+		if (this.onComplete) {
+			this.onComplete();
+			this.onComplete = null;
+		}
+	}
+
 	showNextLine() {
 		const xPosition = this.dialogueX;
 		const yPosition = this.dialogueY;
@@ -119,6 +127,7 @@ export default class DialogueManager {
 		const outlineStroke = 8;
 		const margin = 20;
 		const maxPanelWidth = 350;
+		const dialogueDepth = 1000;
 
 		// tempText to get size
 		const tempText = add.text(0, 0, lineText, {
@@ -141,6 +150,7 @@ export default class DialogueManager {
 
 		//shadow
 		const shadow = add.graphics();
+		shadow.setDepth(dialogueDepth);
 		shadow.fillStyle(0x000000, 0.5);
 		shadow.fillRoundedRect(
 			panelPadding + 10 + xPosition,
@@ -153,6 +163,7 @@ export default class DialogueManager {
 
 		//panel
 		const panel = add.graphics();
+		panel.setDepth(dialogueDepth + 1);
 		panel.lineStyle(outlineStroke, outlineColour, 1);
 		panel.strokeRoundedRect(
 			panelPadding + xPosition,
@@ -173,6 +184,7 @@ export default class DialogueManager {
 
 		//pointer
 		const pointer = add.graphics();
+		pointer.setDepth(dialogueDepth + 2);
 		pointer.fillStyle(0xb5c983, 1);
 
 		//find bottom of panel for speech bubble pointer
@@ -218,6 +230,7 @@ export default class DialogueManager {
 				wordWrap: { width: panelWidth - textPadding * 2 - margin * 2 },
 			}
 		);
+		text.setDepth(dialogueDepth + 3);
 		this.textObjects.push(text);
 	}
 
@@ -270,7 +283,9 @@ export default class DialogueManager {
 		let i = 0;
 		const typeNextChar = () => {
 			if (i < wrappedText.length) {
-				textObject.text += wrappedText[i];
+				// source of potential crash to do with bitmapped text
+				// textObject.text += wrappedText[i];
+				textObject.setText(textObject.text + wrappedText[i]);
 				i++;
 
 				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
@@ -300,65 +315,4 @@ export default class DialogueManager {
 		this.pointers = [];
 		this.textObjects = [];
 	}
-
-	// typeText(textObject, fullText, onComplete, speed = 50) {
-	// 	const speaker = this.lines[this.currentLine].speaker;
-	// 	const soundKey =
-	// 		{
-	// 			player: 'speechSound',
-	// 			npc: 'speechSound',
-	// 			narrator: 'narratorSound',
-	// 			tutorial: 'tutorialSound',
-	// 		}[this.lines[this.currentLine].speaker] || 'speechSound';
-
-	// 	const sound = this.scene.sound.add(soundKey);
-
-	//     //temporarily test dialogue line width
-	// 		const temp = this.scene.add.text(0, 0, testLine, {
-	// 			fonstFamily: textObject.style.fontFamily,
-	// 			fonstSize: textObject.style.fontSize,
-	// 		});
-	// 		const width = temp.width;
-	// 		temp.destroy();
-
-	// 		if (width > maxWidth) {
-	// 			//start a new line if needed
-	// 			currentText += '\n' + word;
-	// 			line = word;
-	// 		} else {
-	// 			//continue same line
-	// 			currentText += word;
-	// 			line = testLine;
-	// 		}
-
-	// 		textObject.setText(currentText);
-
-	// 		let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
-	// 		sound.play({ volume: 0.05, rate: pitch });
-	// 		i++;
-	// 		this.scene.time.delayedCall(speed, typeNextWord);
-	// 	};
-
-	// 	typeNextWord();
-
-	// 	this.scene.time.addEvent({
-	// 		repeat: fullText.length - 1,
-	// 		delay: speed,
-	// 		callback: () => {
-	// 			textObject.text += fullText[i];
-	// 			i++;
-	// 			let pitch;
-	// 			if (speaker === '') {
-	// 				pitch = 1;
-	// 			} else {
-	// 				pitch = Phaser.Math.FloatBetween(0.7, 1.3);
-	// 			}
-	// 			//const sound = this.scene.sound.add('speechSound');
-	// 			sound.play({ volume: 0.05, rate: pitch });
-	// 			if (i === fullText.length && onComplete) {
-	// 				onComplete();
-	// 			}
-	// 		},
-	// 	});
-	// }
 }

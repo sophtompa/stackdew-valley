@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import Player from '../src/player.js';
 import DialogueManager from '../src/dialogueManager.js';
+import renderInventory from '../src/renderInventory.js';
+import togglePause from '../src/togglePause.js';
 import { database, userInventory } from '../src/dummydata.js';
 
 export default class FirstFloor extends Phaser.Scene {
@@ -33,6 +35,10 @@ export default class FirstFloor extends Phaser.Scene {
 		//initialise dialogue manager
 		this.dialogue = new DialogueManager(this);
 
+		//initialise render inventory
+		this.renderInventory = new renderInventory(this);
+		this.renderInventory.render(userInventory);
+
 		//create audio
 		this.harvestingSound = this.sound.add('harvestingSound');
 
@@ -40,6 +46,7 @@ export default class FirstFloor extends Phaser.Scene {
 		const { ENTER, SPACE } = Phaser.Input.Keyboard.KeyCodes;
 		this.enterKey = this.input.keyboard.addKey(ENTER);
 		this.spaceKey = this.input.keyboard.addKey(SPACE);
+		this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
 		const map = this.make.tilemap({ key: 'firstFloorHouseMapData' });
 		const tileset = map.addTilesetImage('houseMap', 'firstFloorHouseMap');
@@ -50,7 +57,7 @@ export default class FirstFloor extends Phaser.Scene {
 
 		//spawn player in correct position depending on whether they've been to this scene before
 		if (!this.registry.get('firstFloorSceneTutorial')) {
-			this.player = new Player(this, 100, 180, 'playerSheet');
+			this.player = new Player(this, 130, 130, 'playerSheet');
 		} else {
 			this.player = new Player(this, 545, 370, 'playerSheet');
 			//face player upwards like they've just come in the door
@@ -194,6 +201,12 @@ export default class FirstFloor extends Phaser.Scene {
 
 	update() {
 		this.player.update();
+		this.renderInventory.render(userInventory);
+
+		//pause toggle
+		if (Phaser.Input.Keyboard.JustDown(this.pKey)) {
+			togglePause(this);
+		}
 
 		const bounds = new Phaser.Geom.Rectangle(
 			this.player.x - this.player.width / 2,
@@ -225,16 +238,7 @@ export default class FirstFloor extends Phaser.Scene {
 				for (let i = 0; i < database.length; i++) {
 					const devling = database[i];
 					userInventory.push(devling);
-
-					//create devling visuals
-					const invX = 50 + i * 40;
-					const invY = 50;
-					const sprite = this.add.sprite(invX, invY, 'devlingImage');
-					//this.dialogue.createPanel(invY, '', '#000000', invX, '');
-					sprite.setInteractive();
-					sprite.setVisible(true);
-					this.emailIcon.setVisible(false);
-					this.devlingSprites[devling.name] = sprite;
+					this.renderInventory.render(userInventory);
 				}
 				console.log('devlings collected', userInventory);
 			}
@@ -278,7 +282,7 @@ export default class FirstFloor extends Phaser.Scene {
 		// 	this.stairsTriggered = false;
 		// }
 
-		if (doorHit && this.spaceKey.isDown && !this.doorTriggered) {
+		if (doorHit && !this.doorTriggered) {
 			this.doorTriggered = true;
 			this.moveScene('farmScene');
 		} else if (!doorHit) {

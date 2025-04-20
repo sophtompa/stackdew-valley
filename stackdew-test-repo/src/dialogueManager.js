@@ -85,6 +85,10 @@ export default class DialogueManager {
 			textObj.setText('');
 
 			this.typeText(textObj, this.lines[index].text, () => {
+				if (this.lines[index].persist) {
+					return;
+				}
+
 				this.scene.time.delayedCall(1250, () => {
 					this.scene.tweens.add({
 						targets: [panelObj, textObj, shadowObj, pointerObj],

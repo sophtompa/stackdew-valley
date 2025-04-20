@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 import dialogueManager from '../src/dialogueManager.js';
+import togglePause from '../src/togglePause.js';
 
 export default class battleScene extends Phaser.Scene {
 	constructor() {
 		super('battleScene');
-		let keyPDown = false;
 	}
 
 	//always listen for P press regardless of pause state
@@ -67,8 +67,8 @@ export default class battleScene extends Phaser.Scene {
 		//skip scene if player presses space
 		this.input.keyboard.on('keydown-SPACE', this.skipConversation, this);
 
-		//listen for p press for pausing
-		this.input.keyboard.on('keydown-P', this.togglePause, this);
+		//listen for p key press
+		this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 	}
 
 	skipConversation() {
@@ -85,26 +85,9 @@ export default class battleScene extends Phaser.Scene {
 	}
 
 	update() {
-		//check for p press to toggle pause
-		const keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
-		if (Phaser.Input.Keyboard.JustDown(keyP) && !this.keyPDown) {
-			this.togglePause();
-			this.keyPDown = true;
-		}
-		//reset keyPDown flag after p is released
-		if (Phaser.Input.Keyboard.JustUp(keyP)) {
-			this.keyPDown = false;
-		}
-	}
-
-	togglePause() {
-		const isPaused = this.scene.isPaused();
-		if (isPaused) {
-			console.log('unpaused');
-			this.scene.resume();
-		} else {
-			console.log('paused');
-			this.scene.pause();
+		// pause toggle
+		if (Phaser.Input.Keyboard.JustDown(this.pKey)) {
+			togglePause(this);
 		}
 	}
 

@@ -41,22 +41,36 @@ export default class DialogueManager {
 	}
 
 	showNextLine() {
-		const xPosition = this.dialogueX;
-		const yPosition = this.dialogueY;
+		const currentLineData = this.lines[this.currentLine];
+
+		//this takes an x and y position from the dialogue text object
+		//if it doesn't exist, it defaults to the global x/y coordinates given at the end of the argument
+		const xPosition =
+			currentLineData.x !== undefined ? currentLineData.x : this.dialogueX;
+		const yPosition =
+			currentLineData.y !== undefined ? currentLineData.y : this.dialogueY;
 		if (this.currentLine < this.lines.length) {
 			const currentLineData = this.lines[this.currentLine];
 			let lineText = currentLineData.text;
 
-			// Handle placeholder text like #16 safely
-			let isPlaceHolder = false;
-			const placeholderMatch = lineText.match(/^#(\d+)$/);
-			if (placeholderMatch) {
-				const charCount = parseInt(placeholderMatch[1], 10);
-				lineText = '\u00A0'.repeat(charCount); // Display blank spaces instead of #16
-				isPlaceHolder = true;
-			}
+			// // Handle placeholder text like #16 safely
+			// let isPlaceHolder = false;
+			// const placeholderMatch = lineText.match(/^#(\d+)$/);
+			// if (placeholderMatch) {
+			// 	const charCount = parseInt(placeholderMatch[1], 10);
+			// 	lineText = '\u00A0'.repeat(charCount); // Display blank spaces instead of #16
+			// 	isPlaceHolder = true;
+			// }
 
-			// Create panel and text even for placeholder
+			// // Create panel and text event for placeholder
+			// this.createPanel(
+			// 	yPosition,
+			// 	lineText,
+			// 	this.lines[this.currentLine].color,
+			// 	xPosition,
+			// 	this.lines[this.currentLine].speaker
+			// );
+
 			this.createPanel(
 				yPosition,
 				lineText,
@@ -71,7 +85,7 @@ export default class DialogueManager {
 			const shadowObj = this.shadows[index];
 			const pointerObj = this.pointers[index];
 
-			const isShouting = !isPlaceHolder && lineText === lineText.toUpperCase();
+			const isShouting = lineText === lineText.toUpperCase();
 
 			// If SHOUTING, add a tween to make the text jiggle
 			if (isShouting) {
@@ -116,28 +130,37 @@ export default class DialogueManager {
 							panelObj.destroy();
 							shadowObj.destroy();
 							this.currentLine++;
-							this.showNextLine();
+							if (this.currentLine < this.lines.length) {
+								this.showNextLine();
+							} else {
+								this.finishDialogue(); // Call only after ALL lines
+							}
 						},
 					});
 				});
-			});
 
-			// If it's a placeholder, we just return to move to the next line
-			if (isPlaceHolder) {
-				if (this.currentLine < this.lines.length - 1) {
-					this.currentLine++;
-					this.showNextLine();
-				}
-				return;
-			}
-		} else {
-			if (this.onComplete) {
-				if (this.shoutTween) {
-					this.shoutTween.stop();
-					this.shoutTween = null;
-				}
-				this.onComplete();
-			}
+				// 			this.showNextLine();
+				// 		},
+				// 	});
+				// });
+
+				// // If it's a placeholder, we just return to move to the next line
+				// if (isPlaceHolder) {
+				// 	if (this.currentLine < this.lines.length - 1) {
+				// 		this.currentLine++;
+				// 		this.showNextLine();
+				// 	}
+				// 	return;
+				// }
+
+				// if (this.onComplete) {
+				// 	if (this.shoutTween) {
+				// 		this.shoutTween.stop();
+				// 		this.shoutTween = null;
+				// 	}
+				// 	this.onComplete();
+				// }
+			});
 		}
 	}
 

@@ -35,6 +35,7 @@ export default class farmScene extends Phaser.Scene {
 		this.load.audio('harvestingSound', '../assets/harvest.wav');
 		this.load.audio('birdsSound', '../assets/birds.wav');
 		this.load.audio('speechSound', '../assets/speechSound.wav');
+		this.load.audio('doorSound', '../assets/door.wav');
 	}
 
 	create() {
@@ -93,6 +94,8 @@ export default class farmScene extends Phaser.Scene {
 		this.wateringSound = this.sound.add('wateringSound');
 		this.harvestingSound = this.sound.add('harvestingSound');
 		this.birdSound = this.sound.add('birdsSound');
+		this.doorSound = this.sound.add('doorSound');
+		this.doorSoundPlayed = false;
 
 		// FRONT DOOR to firstFloor
 		this.frontDoorTrigger = this.physics.add.sprite(273, 260, null);
@@ -177,7 +180,39 @@ export default class farmScene extends Phaser.Scene {
 				this.frontDoorTrigger.getBounds()
 			)
 		) {
-			this.moveScene('firstFloor');
+			//stop player movement
+			// this.player.setVelocity(0, 50);
+			this.player.body.moves = false;
+
+			//hide door to make it look open
+			const doorCover = this.add
+				.rectangle(272, 257, 33, 45, 0x333333)
+				.setOrigin(0.5);
+			doorCover.setDepth(500);
+			doorCover.setAlpha(0);
+
+			//fade door shadow in to hide player
+			this.tweens.add({
+				targets: doorCover,
+				alpha: 0.3,
+				duration: 500,
+				ease: 'Power1',
+			});
+
+			this.tweens.add({
+				targets: this.player,
+				alpha: 0,
+				duration: 200,
+				ease: 'Power1',
+			});
+			this.time.delayedCall(100, () => {
+				//play door sound
+				if (!this.doorSoundPlayed) {
+					this.sound.play('doorSound');
+					this.doorSoundPlayed = true;
+				}
+				this.moveScene('firstFloor');
+			});
 		}
 
 		//PATH to overworldmap
@@ -187,6 +222,7 @@ export default class farmScene extends Phaser.Scene {
 				this.toOverworldTrigger.getBounds()
 			)
 		) {
+			this.input.keyboard.enabled = false;
 			this.moveScene('overworldScene');
 		}
 
@@ -319,6 +355,7 @@ export default class farmScene extends Phaser.Scene {
 
 	moveScene(sceneKey) {
 		this.input.keyboard.enabled = false;
+
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
 			this.scene.start(sceneKey);

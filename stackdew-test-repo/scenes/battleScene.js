@@ -114,13 +114,23 @@ export default class battleScene extends Phaser.Scene {
 								text: `"Hello. I'm here about the job?"`,
 								speaker: 'left',
 								color: '#2c3e50',
+								x: 260,
+								y: 3345,
 							},
 							{
 								text: `"Ah yes. Right this way!"`,
 								speaker: 'right',
 								color: '#502c2c',
+								x: 0,
+								y: 3340,
 							},
-							{ text: `"Uh ... thanks!"`, speaker: 'left', color: '#2c3e50' },
+							{
+								text: `"Uh ... thanks!"`,
+								speaker: 'left',
+								color: '#2c3e50',
+								x: 260,
+								y: 3345,
+							},
 						],
 						() => {
 							this.cameras.main.pan(400, 224, 11000, 'Cubic.easeInOut');
@@ -135,54 +145,57 @@ export default class battleScene extends Phaser.Scene {
 	}
 
 	doFootSteps() {
-		this.time.delayedCall(750);
 		const footSteps = this.sound.add('footStepSound', {
 			volume: 0.2,
 			loop: false,
 		});
-		footSteps.play();
-		// interval is twice a second
+
 		let interval = 700;
-		const footStepsEvent = this.time.addEvent({
-			delay: interval,
-			callback: () => {
-				footSteps.play();
-			},
-			callbackScope: this,
-			loop: true,
+		let footStepTimer = null;
+
+		const playStep = () => {
+			footSteps.play();
+
+			//set up the next step
+			footStepTimer = this.time.delayedCall(interval, playStep, null, this);
+		};
+
+		//start after a short delay
+		this.time.delayedCall(50, () => {
+			playStep();
 		});
 
+		//gradually decrease interval
 		const intervalDecrease = this.time.addEvent({
-			delay: 1000,
+			delay: 900,
 			callback: () => {
 				if (interval > 80) {
 					interval -= 100;
-					//footStepsEvent.delay = interval;
-					footStepsEvent.reset({
-						delay: interval,
-						callback: () => {
-							footSteps.play();
-						},
-						callbackScope: this,
-						loop: true,
-					});
 				}
 			},
-			callbackScope: this,
 			loop: true,
 		});
-		this.time.delayedCall(5000, () => {
+		//fade out and stop after x seconds
+		this.time.delayedCall(5500, () => {
+			//start fading out during the last second
 			this.tweens.add({
 				targets: footSteps,
-				volume: 0.01,
-				duration: 2000,
+				volume: 0.01, // Reduce to very low volume
+				duration: 1000, // Fade out in the last second
 				ease: 'Linear',
-				onComplete: () => {
-					footSteps.stop();
-				},
 			});
+		});
+
+		//stop the footstep sound and cleanup after x seconds
+		this.time.delayedCall(6500, () => {
+			footSteps.stop();
 
 			intervalDecrease.remove();
+
+			//stop any more footstep sounds happening
+			if (footStepTimer) {
+				footStepTimer.remove();
+			}
 		});
 	}
 }

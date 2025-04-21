@@ -274,7 +274,7 @@ export default class FirstFloor extends Phaser.Scene {
 
 		this.doorTrigger = this.physics.add
 			.sprite(560, 440)
-			.setSize(120, 55)
+			.setSize(110, 53)
 			.setVisible(false);
 		this.doorTriggered = false;
 	}

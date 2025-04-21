@@ -31,6 +31,7 @@ export default class battleScene extends Phaser.Scene {
 		//audio files for speech and footsteps
 		this.load.audio('speechSound', '../assets/speechSound.wav');
 		this.load.audio('footStepSound', '../assets/footStepSound.wav');
+		this.load.audio('citySound', '../assets/cityweird.wav');
 	}
 
 	create() {
@@ -61,6 +62,19 @@ export default class battleScene extends Phaser.Scene {
 			.setScale(0.35, 0.65)
 			.setTint(0xaaaaaa)
 			.setAngle(-5);
+
+		//ambient city sound that fades as the convo starts
+		const cityAmbienceSound = this.sound.add('citySound', {
+			volume: 0.7,
+			loop: 3,
+		});
+		cityAmbienceSound.play();
+		this.tweens.add({
+			targets: cityAmbienceSound,
+			volume: 0.1,
+			duration: 6500,
+			ease: 'Linear',
+		});
 
 		this.doCutScene();
 
@@ -146,11 +160,12 @@ export default class battleScene extends Phaser.Scene {
 
 	doFootSteps() {
 		const footSteps = this.sound.add('footStepSound', {
-			volume: 0.2,
+			volume: 0.3,
 			loop: false,
 		});
 
-		let interval = 700;
+		let interval = 500;
+		let reducer = 90;
 		let footStepTimer = null;
 
 		const playStep = () => {
@@ -165,29 +180,32 @@ export default class battleScene extends Phaser.Scene {
 			playStep();
 		});
 
-		//gradually decrease interval
+		//gradually decrease interval between steps
 		const intervalDecrease = this.time.addEvent({
-			delay: 900,
+			delay: 700,
 			callback: () => {
-				if (interval > 80) {
-					interval -= 100;
+				//this value is the fastest steps
+				if (interval > 130) {
+					interval -= reducer;
+					reducer -= 10;
 				}
 			},
 			loop: true,
 		});
+
 		//fade out and stop after x seconds
-		this.time.delayedCall(5500, () => {
+		this.time.delayedCall(6200, () => {
 			//start fading out during the last second
 			this.tweens.add({
 				targets: footSteps,
-				volume: 0.01, // Reduce to very low volume
-				duration: 1000, // Fade out in the last second
+				volume: 0.0,
+				duration: 1000,
 				ease: 'Linear',
 			});
 		});
 
 		//stop the footstep sound and cleanup after x seconds
-		this.time.delayedCall(6500, () => {
+		this.time.delayedCall(7000, () => {
 			footSteps.stop();
 
 			intervalDecrease.remove();

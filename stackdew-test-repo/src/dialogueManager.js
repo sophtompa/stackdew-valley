@@ -9,6 +9,7 @@ export default class DialogueManager {
 		this.pointers = [];
 		this.textObjects = [];
 		this.currentLine = 0;
+		this.soundVolume = 0.1;
 	}
 
 	startDialogue(lines, onComplete, x, y) {
@@ -37,7 +38,8 @@ export default class DialogueManager {
 	}
 
 	isDialogueRunning() {
-		return this.currentLine < this.lines.length;
+		//return this.currentLine < this.lines.length;
+		return Array.isArray(this.lines) && this.currentLine < this.lines.length;
 	}
 
 	showNextLine() {
@@ -89,6 +91,8 @@ export default class DialogueManager {
 
 			// If SHOUTING, add a tween to make the text jiggle
 			if (isShouting) {
+				//shouting volume is also louder
+				this.soundVolume = 0.3;
 				this.shoutTween = this.scene.tweens.add({
 					targets: textObj,
 					x: {
@@ -109,6 +113,8 @@ export default class DialogueManager {
 				//     yoyo: true,
 				//     repeat: -1,
 				// });
+			} else {
+				this.soundVolume = 0.1;
 			}
 
 			textObj.setStyle({ color: this.lines[index].color });
@@ -138,131 +144,9 @@ export default class DialogueManager {
 						},
 					});
 				});
-
-				// 			this.showNextLine();
-				// 		},
-				// 	});
-				// });
-
-				// // If it's a placeholder, we just return to move to the next line
-				// if (isPlaceHolder) {
-				// 	if (this.currentLine < this.lines.length - 1) {
-				// 		this.currentLine++;
-				// 		this.showNextLine();
-				// 	}
-				// 	return;
-				// }
-
-				// if (this.onComplete) {
-				// 	if (this.shoutTween) {
-				// 		this.shoutTween.stop();
-				// 		this.shoutTween = null;
-				// 	}
-				// 	this.onComplete();
-				// }
 			});
 		}
 	}
-
-	// showNextLine() {
-	// 	const xPosition = this.dialogueX;
-	// 	const yPosition = this.dialogueY;
-	// 	if (this.currentLine < this.lines.length) {
-	// 		const currentLineData = this.lines[this.currentLine];
-	// 		let lineText = currentLineData.text;
-
-	// 		// Placeholder detection for empty panel UI use.
-	// 		let isPlaceHolder = false;
-	// 		const placeholderMatch = lineText.match(/^#(\d+)$/);
-	// 		if (placeholderMatch) {
-	// 			const charCount = parseInt(placeholderMatch[1], 10);
-	// 			lineText = '\u00A0'.repeat(charCount);
-	// 			isPlaceHolder = true;
-
-	// 			//update the 'empty' line to parse with dialogue function
-	// 			// this.lines[this.currentLine].text = lineText;
-	// 		}
-
-	// 		this.createPanel(
-	// 			yPosition,
-	// 			this.lines[this.currentLine].text,
-	// 			this.lines[this.currentLine].color,
-	// 			xPosition,
-	// 			this.lines[this.currentLine].speaker
-	// 		);
-
-	// 		const index = this.currentLine;
-	// 		const textObj = this.textObjects[index];
-	// 		const panelObj = this.panels[index];
-	// 		const shadowObj = this.shadows[index];
-	// 		const pointerObj = this.pointers[index];
-
-	// 		const onComplete = () => {
-	// 			if (this.lines[index].persist) {
-	// 				return;
-	// 			}
-	// 		}
-	// 		const isShouting =
-	// 			!isPlaceHolder &&
-	// 			currentLineData.text === currentLineData.text.toUpperCase();
-
-	// 		//if SHOUTING add a tween to the text to make it jiggle
-	// 		if (isShouting) {
-	// 			this.shoutTween = this.scene.tweens.add({
-	// 				targets: textObj,
-	// 				x: {
-	// 					from: textObj.x - 2,
-	// 					to: textObj.x + 2,
-	// 				},
-	// 				duration: 50,
-	// 				yoyo: true,
-	// 				repeat: -1,
-	// 			});
-
-	// 			//jiggle speech bubble panel if SHOUTING
-	// 			// this.scene.tweens.add({
-	// 			// 	targets: panelObj,
-	// 			// 	x: { from: panelObj.x - 2, to: panelObj.x + 2 },
-	// 			// 	y: { from: panelObj.y - 1, to: panelObj.y + 1 },
-	// 			// 	duration: 50,
-	// 			// 	yoyo: true,
-	// 			// 	repeat: -1,
-	// 			// });
-	// 		}
-
-	// 		textObj.setStyle({ color: this.lines[index].color });
-	// 		textObj.setText('');
-
-	// 		this.typeText(textObj, this.lines[index].text, () => {
-	// 			if (this.lines[index].persist) {
-	// 				return;
-	// 			}
-
-	// 			this.scene.time.delayedCall(1250, () => {
-	// 				this.scene.tweens.add({
-	// 					targets: [panelObj, textObj, shadowObj, pointerObj],
-	// 					alpha: 0,
-	// 					duration: 1000,
-	// 					ease: 'Power2',
-	// 					onComplete: () => {
-	// 						panelObj.destroy();
-	// 						shadowObj.destroy();
-	// 						this.currentLine++;
-	// 						this.showNextLine();
-	// 					},
-	// 				});
-	// 			});
-	// 		});
-	// 	} else {
-	// 		if (this.onComplete) {
-	// 			if (this.shoutTween) {
-	// 				this.shoutTween.stop();
-	// 				this.shoutTween = null;
-	// 			}
-	// 			this.onComplete();
-	// 		}
-	// 	}
-	// }
 
 	createPanel(
 		yPosition,
@@ -449,7 +333,7 @@ export default class DialogueManager {
 				i++;
 
 				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
-				sound.play({ volume: 0.05, rate: pitch });
+				sound.play({ volume: this.soundVolume, rate: pitch });
 
 				this.scene.time.delayedCall(speed, typeNextChar);
 			} else if (onComplete) {

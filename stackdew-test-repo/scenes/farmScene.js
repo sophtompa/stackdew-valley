@@ -99,7 +99,7 @@ export default class farmScene extends Phaser.Scene {
 
 		// FRONT DOOR to firstFloor
 		this.frontDoorTrigger = this.physics.add.sprite(273, 260, null);
-		this.frontDoorTrigger.setSize(45, 80);
+		this.frontDoorTrigger.setSize(45, 60);
 		this.frontDoorTrigger.setVisible(false);
 		this.frontDoorTriggered = false;
 
@@ -111,7 +111,7 @@ export default class farmScene extends Phaser.Scene {
 
 		//create hidden trigger for planting devling
 		this.plantTrigger = this.physics.add.sprite(560, 215, null);
-		this.plantTrigger.setSize(150, 25);
+		this.plantTrigger.setSize(150, 40);
 		this.plantTrigger.setVisible(false);
 		this.plantTriggered = false;
 
@@ -208,7 +208,7 @@ export default class farmScene extends Phaser.Scene {
 			this.time.delayedCall(100, () => {
 				//play door sound
 				if (!this.doorSoundPlayed) {
-					this.sound.play('doorSound');
+					this.sound.play('doorSound', { volume: 0.3 });
 					this.doorSoundPlayed = true;
 				}
 				this.moveScene('firstFloor');
@@ -243,38 +243,58 @@ export default class farmScene extends Phaser.Scene {
 			Phaser.Input.Keyboard.JustDown(this.spaceKey) &&
 			!this.isDialogueRunning
 		) {
-			//check user has devlings to plant or water
-			const hasUnplanted = userInventory.some(
+			const unplanted = userInventory.find(
 				(devling) => !devling.isPlanted && !devling.isGrown
 			);
-			const hasUnwatered = userInventory.some(
+			const unwatered = userInventory.find(
 				(devling) => devling.isPlanted && !devling.isWatered && !devling.isGrown
 			);
-			const grown = userInventory.some(
-				(devling) => devling.isPlanted && devling.isWatered
+			const harvestableIndex = userInventory.findIndex(
+				(devling) => devling.isPlanted && devling.isWatered && !devling.isGrown
 			);
 
-			const hasGrown = userInventory.some((devling) => devling.isGrown);
-			this.renderInventory.render(userInventory);
+			if (unplanted) {
+				//plant
+				unplanted.isPlanted = true;
+				localStorage.setItem('userInventory', JSON.stringify(userInventory));
+				this.plantingSound.play();
+				console.log('planting', unplanted.name);
+				this.renderInventory.render(userInventory);
+			} else if (unwatered) {
+				//water
+				unwatered.isWatered = true;
+				this.wateringSound.play({ volume: 0.5 });
+				console.log('watering', unwatered.name);
+				this.renderInventory.render(userInventory);
+			} else if (harvestableIndex !== -1) {
+				//harvest
+				const devling = userInventory[harvestableIndex];
+				devling.isGrown = true;
+				devling.isPlanted = false;
+				devling.isWatered = false;
 
-			//if unplanted, we plant
-			if (hasUnplanted) {
-				for (let i = 0; i < userInventory.length; i++) {
-					if (userInventory[i].isPlanted === false) {
-						userInventory[i].isPlanted = true;
+				console.log(devling.name, 'has grown and has been harvested!');
+				this.harvestingSound.play();
+				this.renderInventory.render(userInventory);
 
-						localStorage.setItem(
-							'userInventory',
-							JSON.stringify(userInventory)
-						);
-						this.plantingSound.play();
-						console.log('planting', userInventory[i]);
-						this.renderInventory.render(userInventory);
-						break;
-					}
-				}
-			} else if (!hasUnplanted && !hasUnwatered && !hasGrown && !grown) {
-				//no devlings to plant/water/harvest
+				// this.isDialogueRunning = true;
+				// this.dialogue.startDialogue(
+				// 	[
+				// 		{
+				// 			text: `Harvested Devling!`,
+				// 			speaker: '',
+				// 			color: '#1f451c',
+				// 		},
+				// 	],
+				// 	() => {
+				// 		this.isDialogueRunning = false;
+				// 	},
+				// 	435,
+				// 	40
+				// );
+				// this.isDialogueRunning = true;
+			} else {
+				//nothing to do
 				this.dialogue.startDialogue(
 					[
 						{
@@ -284,7 +304,6 @@ export default class farmScene extends Phaser.Scene {
 						},
 					],
 					() => {
-						//reset isDialogueRunning after the dialogue is complete via callback
 						this.isDialogueRunning = false;
 					},
 					385,
@@ -292,65 +311,117 @@ export default class farmScene extends Phaser.Scene {
 				);
 				this.isDialogueRunning = true;
 			}
-
-			//If all planted and not watered, we water
-			else if (hasUnwatered) {
-				for (let i = 0; i < userInventory.length; i++) {
-					if (
-						userInventory[i].isPlanted === true &&
-						userInventory[i].isWatered === false &&
-						userInventory[i].isGrown === false
-					) {
-						userInventory[i].isWatered = true;
-						this.wateringSound.play({ volume: 0.5 });
-						//this.jiggleSprite(plantedSprite[userInventory[i].name]);
-						console.log('watering', userInventory[i].name);
-						this.renderInventory.render(userInventory);
-						break;
-					}
-				}
-			}
-
-			//If grown, we can harvest. Currently grown = has been planted and watered.
-			else if (grown) {
-				for (let i = 0; i < userInventory.length; i++) {
-					if (userInventory[i].isGrown === false) {
-						userInventory[i].isGrown = true;
-						userInventory[i].isPlanted = false;
-						userInventory[i].isWatered = false;
-
-						console.log(
-							userInventory[i].name,
-							'has grown and has been harvested!'
-						);
-						this.harvestingSound.play();
-						this.renderInventory.render(userInventory);
-						this.dialogue.startDialogue(
-							[
-								{
-									text: `Harvested Devling!`,
-									speaker: '',
-									color: '#1f451c',
-								},
-							],
-							() => {
-								//reset isDialogueRunning after the dialogue is complete via callback
-								this.isDialogueRunning = false;
-							},
-							435,
-							40
-						);
-						this.isDialogueRunning = true;
-						break;
-					}
-				}
-			}
-
-			if (Phaser.Input.Keyboard.JustUp(this.spaceKey)) {
-				this.plantingInProgress = false;
-				this.wateringInProgress = false;
-			}
 		}
+
+		//  {
+		// 	//check user has devlings to plant or water
+		// 	const hasUnplanted = userInventory.some(
+		// 		(devling) => !devling.isPlanted && !devling.isGrown
+		// 	);
+		// 	const hasUnwatered = userInventory.some(
+		// 		(devling) => devling.isPlanted && !devling.isWatered && !devling.isGrown
+		// 	);
+		// 	const grown = userInventory.some(
+		// 		(devling) => devling.isPlanted && devling.isWatered
+		// 	);
+
+		// 	const hasGrown = userInventory.some((devling) => devling.isGrown);
+		// 	this.renderInventory.render(userInventory);
+
+		// 	//if unplanted, we plant
+		// 	if (hasUnplanted) {
+		// 		for (let i = 0; i < userInventory.length; i++) {
+		// 			if (userInventory[i].isPlanted === false) {
+		// 				userInventory[i].isPlanted = true;
+
+		// 				localStorage.setItem(
+		// 					'userInventory',
+		// 					JSON.stringify(userInventory)
+		// 				);
+		// 				this.plantingSound.play();
+		// 				console.log('planting', userInventory[i]);
+		// 				this.renderInventory.render(userInventory);
+		// 				break;
+		// 			}
+		// 		}
+		// 	} else if (!hasUnplanted && !hasUnwatered && !hasGrown && !grown) {
+		// 		//no devlings to plant/water/harvest
+		// 		this.dialogue.startDialogue(
+		// 			[
+		// 				{
+		// 					text: `Nothing to do here right now...`,
+		// 					speaker: '',
+		// 					color: '#1f451c',
+		// 				},
+		// 			],
+		// 			() => {
+		// 				//reset isDialogueRunning after the dialogue is complete via callback
+		// 				this.isDialogueRunning = false;
+		// 			},
+		// 			385,
+		// 			20
+		// 		);
+		// 		this.isDialogueRunning = true;
+		// 	}
+
+		// 	//If all planted and not watered, we water
+		// 	else if (hasUnwatered) {
+		// 		for (let i = 0; i < userInventory.length; i++) {
+		// 			if (
+		// 				userInventory[i].isPlanted === true &&
+		// 				userInventory[i].isWatered === false &&
+		// 				userInventory[i].isGrown === false
+		// 			) {
+		// 				userInventory[i].isWatered = true;
+		// 				this.wateringSound.play({ volume: 0.5 });
+		// 				//this.jiggleSprite(plantedSprite[userInventory[i].name]);
+		// 				console.log('watering', userInventory[i].name);
+		// 				this.renderInventory.render(userInventory);
+		// 				break;
+		// 			}
+		// 		}
+		// 	}
+
+		// 	//If grown, we can harvest. Currently grown = has been planted and watered.
+		// 	else if (grown) {
+		// 		for (let i = 0; i < userInventory.length; i++) {
+		// 			if (userInventory[i].isGrown === false) {
+		// 				userInventory[i].isGrown = true;
+		// 				userInventory[i].isPlanted = false;
+		// 				userInventory[i].isWatered = false;
+
+		// 				console.log(
+		// 					userInventory[i].name,
+		// 					'has grown and has been harvested!'
+		// 				);
+		// 				this.harvestingSound.play();
+		// 				this.renderInventory.render(userInventory);
+		// 				this.dialogue.startDialogue(
+		// 					[
+		// 						{
+		// 							text: `Harvested Devling!`,
+		// 							speaker: '',
+		// 							color: '#1f451c',
+		// 						},
+		// 					],
+		// 					() => {
+		// 						//reset isDialogueRunning after the dialogue is complete via callback
+		// 						this.isDialogueRunning = false;
+		// 					},
+		// 					435,
+		// 					40
+		// 				);
+		// 				this.isDialogueRunning = true;
+		// 				break;
+		// 			}
+		// 		}
+		// 	}
+
+		// 	if (Phaser.Input.Keyboard.JustUp(this.spaceKey)) {
+		// 		this.plantingInProgress = false;
+		// 		this.wateringInProgress = false;
+		// 	}
+		// }
 	}
 
 	moveScene(sceneKey) {

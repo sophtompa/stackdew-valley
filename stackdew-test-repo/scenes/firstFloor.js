@@ -16,9 +16,9 @@ export default class FirstFloor extends Phaser.Scene {
 			'../assets/chrishouseMap.json'
 		);
 		this.load.image('firstFloorHouseMap', '../assets/chrishouseMap.png');
-		this.load.spritesheet('playerSheet', 'assets/dummy.png', {
+		this.load.spritesheet('playerSheet', 'assets/rose.png', {
 			frameWidth: 32,
-			frameHeight: 61,
+			frameHeight: 65,
 		});
 		this.load.spritesheet('devlingImage', '../assets/devlingSpritesheet.png', {
 			frameWidth: 64,
@@ -55,9 +55,13 @@ export default class FirstFloor extends Phaser.Scene {
 			.setCollisionByProperty({ collide: true });
 		mapLayer.setPosition(0, 0);
 
+		const aboveLayer = map.createLayer('Tile Layer 2', tileset);
+		aboveLayer.setPosition(0, 0);
+		aboveLayer.setDepth(10);
+
 		//spawn player in correct position depending on whether they've been to this scene before
 		if (!this.registry.get('firstFloorSceneTutorial')) {
-			this.player = new Player(this, 130, 130, 'playerSheet');
+			this.player = new Player(this, 130, 120, 'playerSheet');
 		} else {
 			this.player = new Player(this, 545, 370, 'playerSheet');
 			//face player upwards like they've just come in the door
@@ -66,8 +70,8 @@ export default class FirstFloor extends Phaser.Scene {
 				this.player.anims.stop();
 			}
 			this.player.lastDirection = 'up';
-			this.player.setTexture('playerSheet').setFrame(8);
-			this.player.setFrame(8);
+			this.player.setTexture('playerSheet').setFrame(1);
+			this.player.setFrame(1);
 		}
 
 		this.physics.add.collider(this.player, mapLayer);
@@ -277,30 +281,52 @@ export default class FirstFloor extends Phaser.Scene {
 			.setSize(110, 53)
 			.setVisible(false);
 		this.doorTriggered = false;
+
+		this.kitchenTrigger = this.physics.add
+			.sprite(555, 290)
+			.setSize(170, 70)
+			.setVisible(false);
+		this.kitchenTriggered = false;
 	}
 
 	handleTriggers(bounds) {
-		// const stairsHit = Phaser.Geom.Intersects.RectangleToRectangle(
-		// 	bounds,
-		// 	this.stairsTrigger.getBounds()
-		// );
+		//check if player exits via doorway
 		const doorHit = Phaser.Geom.Intersects.RectangleToRectangle(
 			bounds,
 			this.doorTrigger.getBounds()
 		);
-
-		// if (stairsHit && !this.stairsTriggered) {
-		// 	this.stairsTriggered = true;
-		// 	this.moveScene('secondFloor');
-		// } else if (!stairsHit) {
-		// 	this.stairsTriggered = false;
-		// }
-
 		if (doorHit && !this.doorTriggered) {
 			this.doorTriggered = true;
 			this.moveScene('farmScene');
 		} else if (!doorHit) {
 			this.doorTriggered = false;
+		}
+
+		//check if player enters kitchen
+		const kitchenHit = Phaser.Geom.Intersects.RectangleToRectangle(
+			bounds,
+			this.kitchenTrigger.getBounds()
+		);
+		if (
+			kitchenHit &&
+			!this.kitchenTriggered &&
+			!this.dialogue.isDialogueRunning()
+		) {
+			this.kitchenTriggered = true;
+			this.dialogue.startDialogue(
+				[
+					{
+						text: `The kitchen is being renovated right now and will have fun things to do in future versions.`,
+						speaker: '',
+						color: '#1f451c',
+					},
+				],
+				null,
+				350,
+				125
+			);
+		} else if (!kitchenHit) {
+			this.kitchenTriggered = false;
 		}
 	}
 

@@ -7,6 +7,7 @@ import farmScene from '../scenes/farmScene.js';
 import ComputerScene from '../scenes/computerScene.js';
 import officeScene from '../scenes/officeScene.js';
 import battleScene from '../scenes/battleScene.js';
+import TitleScene from '../scenes/titleScene.js';
 
 export class mainScene extends Phaser.Scene {
 	constructor() {
@@ -40,6 +41,7 @@ const config = {
 	},
 
 	scene: [
+		TitleScene,
 		farmScene,
 		firstFloor,
 		overworldScene,

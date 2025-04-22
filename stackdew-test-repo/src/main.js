@@ -49,9 +49,9 @@ const config = {
 
 
   scene: [
+    farmScene,
     firstFloor,
     preloadScene,
-    farmScene,
     overworldScene,
     secondFloor,
     ComputerScene,

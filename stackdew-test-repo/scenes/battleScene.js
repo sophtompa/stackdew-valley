@@ -87,16 +87,20 @@ export default class battleScene extends Phaser.Scene {
 
 	skipConversation() {
 		//skip to specified scene if user presses space (needs changing to actual battlescene)
-		this.scene.start('overworldScene');
+		this.moveScene();
 	}
 
 	moveScene() {
 		//transition to next scene
+		this.sound.stopAll();
+		this.input.keyboard.enabled = false;
 		this.cameras.main.fadeOut(1000, 0, 0, 0);
 		this.time.delayedCall(1000, () => {
-			this.scene.start('overworldScene');
+		this.scene.start('overworldScene', {from: 'battleScene'});
+		this.input.keyboard.enabled = true;
 		});
 	}
+
 
 	update() {
 		// pause toggle

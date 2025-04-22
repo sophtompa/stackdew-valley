@@ -17,7 +17,7 @@ export default class farmScene extends Phaser.Scene {
 		//Where we spawn when coming FROM these locations
 		const spawnPoints = {
 			firstFloor: { x: 275, y: 300 },
-			overworldScene: { x: 700, y: 370 },
+			overworldScene: { x: 700, y: 340 },
 		};
 
 		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
@@ -34,7 +34,7 @@ export default class farmScene extends Phaser.Scene {
 			'../assets/3_Props_and_Buildings_32x32.png'
 		);
 		this.load.image('6_Trees_32x32', '../assets/6_Trees_32x32.png');
-		this.load.spritesheet('playerSheet', 'assets/farmer.png', {
+		this.load.spritesheet('playerSheet', 'assets/rose.png', {
 			frameWidth: 64,
 			frameHeight: 64,
 		});

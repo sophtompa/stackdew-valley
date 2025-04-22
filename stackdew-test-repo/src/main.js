@@ -15,6 +15,8 @@ export class mainScene extends Phaser.Scene {
 	}
 }
 
+//blah
+
 const config = {
 	type: Phaser.AUTO,
 	width: 800,

@@ -3,6 +3,7 @@ export default class RenderInventory {
 		this.scene = scene;
 		this.devlingSprites = {};
 		this.devlingShadowSprites = {};
+		this.devlingWateredSprites = {};
 		this.plantedDevlingSprites = {};
 		this.plotOffset = 0;
 	}
@@ -16,12 +17,14 @@ export default class RenderInventory {
 		Object.values(this.devlingShadowSprites).forEach((shadow) =>
 			shadow.destroy()
 		);
+
 		Object.values(this.plantedDevlingSprites).forEach((sprite) =>
 			sprite.destroy()
 		);
 
 		this.devlingSprites = {};
 		this.devlingShadowSprites = {};
+		// this.devlingWateredSprites = {};
 		this.plantedDevlingSprites = {};
 
 		let invX = 50;
@@ -38,14 +41,13 @@ export default class RenderInventory {
 				shadow.setAlpha(0.5);
 				sprite.setDepth(1002);
 				shadow.setDepth(1001);
-
 				this.devlingSprites[devling.name] = sprite;
 				this.devlingShadowSprites[devling.name] = shadow;
+
 				invX += 40;
 			}
 
 			if (this.scene.scene.key === 'farmScene') {
-				console.log('farm scene sprites');
 				// Planted plot (dirt bed)
 				if (devling.isPlanted && !devling.isGrown) {
 					if (devling.plantX === undefined || devling.plantY === undefined) {
@@ -61,7 +63,43 @@ export default class RenderInventory {
 						devling.plantY,
 						'devlingImage'
 					);
+					plantedSprite.setDepth(6);
+
 					this.plantedDevlingSprites[devling.name] = plantedSprite;
+				}
+
+				if (
+					devling.isPlanted &&
+					devling.isWatered &&
+					!devling.isGrown &&
+					!devling.isWateredTweenActive
+				) {
+					const watered = add.sprite(
+						devling.plantX,
+						devling.plantY,
+						'devlingImage'
+					);
+					watered.setTint(0x000000);
+					watered.setAlpha(0.5);
+					watered.setDepth(4);
+					watered.setScale(1.5);
+					this.devlingWateredSprites[devling.name] = watered;
+
+					devling.isWateredTweenActive = true;
+
+					this.scene.tweens.add({
+						targets: watered,
+						alpha: 0,
+						duration: 5000,
+						ease: 'Sine.easeInOut',
+						onComplete: () => {
+							devling.isWatered = true;
+							devling.isWateredTweenActive = false;
+							watered.destroy();
+							delete this.devlingWateredSprites[devling.name];
+							console.log(`${devling.name} is now watered!`);
+						},
+					});
 				}
 			}
 		});

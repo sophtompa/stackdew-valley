@@ -137,7 +137,7 @@ export default class farmScene extends Phaser.Scene {
 		//farm dirt patch:
 		this.plantedDevlingSprites = {};
 
-		this.renderInventory.render(userInventory);
+		//this.renderInventory.render(userInventory);
 
 		this.cameras.main.fadeIn(1000, 0, 0, 0);
 

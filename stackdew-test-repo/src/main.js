@@ -7,12 +7,15 @@ import farmScene from '../scenes/farmScene.js';
 import ComputerScene from '../scenes/computerScene.js';
 import officeScene from '../scenes/officeScene.js';
 import battleScene from '../scenes/battleScene.js';
+import pauseScene from '../scenes/pauseScene.js';
 
 export class mainScene extends Phaser.Scene {
 	constructor() {
 		super('mainScene');
 	}
 }
+
+//blah
 
 const config = {
 	type: Phaser.AUTO,
@@ -40,6 +43,10 @@ const config = {
 	},
 
 	scene: [
+
+		firstFloor,
+		battleScene,
+
 		farmScene,
 		firstFloor,
 		overworldScene,
@@ -47,7 +54,7 @@ const config = {
 		secondFloor,
 		ComputerScene,
 		officeScene,
-		battleScene,
+		pauseScene,
 	],
 };
 

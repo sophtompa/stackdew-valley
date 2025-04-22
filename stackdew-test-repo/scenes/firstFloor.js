@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import Player from '../src/player.js';
+import DialogueManager from '../src/dialogueManager.js';
+import renderInventory from '../src/renderInventory.js';
+import togglePause from '../src/togglePause.js';
 import { database, userInventory } from '../src/dummydata.js';
 
 export default class FirstFloor extends Phaser.Scene {
@@ -13,9 +16,9 @@ export default class FirstFloor extends Phaser.Scene {
 			'../assets/chrishouseMap.json'
 		);
 		this.load.image('firstFloorHouseMap', '../assets/chrishouseMap.png');
-		this.load.spritesheet('playerSheet', 'assets/dummy.png', {
+		this.load.spritesheet('playerSheet', 'assets/rose.png', {
 			frameWidth: 32,
-			frameHeight: 61,
+			frameHeight: 65,
 		});
 		this.load.spritesheet('devlingImage', '../assets/devlingSpritesheet.png', {
 			frameWidth: 64,
@@ -25,9 +28,17 @@ export default class FirstFloor extends Phaser.Scene {
 		this.load.image('newMailIcon', 'assets/mail.png');
 		this.load.audio('mailSound', 'assets/yougotmail.mp3');
 		this.load.audio('harvestingSound', '../assets/harvest.wav');
+		this.load.audio('speechSound', '../assets/speechSound.wav');
 	}
 
 	create() {
+		//initialise dialogue manager
+		this.dialogue = new DialogueManager(this);
+
+		//initialise render inventory
+		this.renderInventory = new renderInventory(this);
+		this.renderInventory.render(userInventory);
+
 		//create audio
 		this.harvestingSound = this.sound.add('harvestingSound');
 
@@ -35,6 +46,7 @@ export default class FirstFloor extends Phaser.Scene {
 		const { ENTER, SPACE } = Phaser.Input.Keyboard.KeyCodes;
 		this.enterKey = this.input.keyboard.addKey(ENTER);
 		this.spaceKey = this.input.keyboard.addKey(SPACE);
+		this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
 		const map = this.make.tilemap({ key: 'firstFloorHouseMapData' });
 		const tileset = map.addTilesetImage('houseMap', 'firstFloorHouseMap');
@@ -43,8 +55,70 @@ export default class FirstFloor extends Phaser.Scene {
 			.setCollisionByProperty({ collide: true });
 		mapLayer.setPosition(0, 0);
 
-		this.player = new Player(this, 100, 180, 'playerSheet');
+		const aboveLayer = map.createLayer('Tile Layer 2', tileset);
+		aboveLayer.setPosition(0, 0);
+		aboveLayer.setDepth(10);
+
+		//spawn player in correct position depending on whether they've been to this scene before
+		if (!this.registry.get('firstFloorSceneTutorial')) {
+			this.player = new Player(this, 130, 120, 'playerSheet');
+		} else {
+			this.player = new Player(this, 545, 370, 'playerSheet');
+			//face player upwards like they've just come in the door
+
+			if (this.player.anims.isPlaying) {
+				this.player.anims.stop();
+			}
+			this.player.lastDirection = 'up';
+			this.player.setTexture('playerSheet').setFrame(1);
+			this.player.setFrame(1);
+		}
+
 		this.physics.add.collider(this.player, mapLayer);
+
+		//check to see if this is our first time i nthis scene and if so, play some tutorial dialogue
+		if (!this.registry.get('firstFloorSceneTutorial')) {
+			this.registry.set('firstFloorSceneTutorial', true);
+			this.time.delayedCall(700, () => {
+				this.dialogue.startDialogue(
+					[
+						{
+							text: `Welcome ... to StackDew Valley.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Tip: Use arrow keys to move and spacebar to interact.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `It's almost 8:45 and time for the morning lecture.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `RISE AND SHINE CODERS!!!`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Tip: As a tutor, CorthNoders may contact you on your laptop.`,
+							speaker: '',
+							color: '#1f451c',
+						},
+						{
+							text: `Alternatively, why not pop outside to touch grass?`,
+							speaker: '',
+							color: '#1f451c',
+						},
+					],
+					null,
+					30,
+					345
+				);
+			});
+		}
 
 		// Email icon
 		//TODO: sort out images for the icons
@@ -132,6 +206,12 @@ export default class FirstFloor extends Phaser.Scene {
 
 	update() {
 		this.player.update();
+		this.renderInventory.render(userInventory);
+
+		//pause toggle
+		if (Phaser.Input.Keyboard.JustDown(this.pKey)) {
+			togglePause(this);
+		}
 
 		const bounds = new Phaser.Geom.Rectangle(
 			this.player.x - this.player.width / 2,
@@ -163,13 +243,20 @@ export default class FirstFloor extends Phaser.Scene {
 				for (let i = 0; i < database.length; i++) {
 					const devling = database[i];
 					userInventory.push(devling);
-
-					//create devling visuals
-					const sprite = this.add.sprite(50 + i * 40, 50, 'devlingImage');
-					sprite.setInteractive();
-					sprite.setVisible(true);
-					this.emailIcon.setVisible(false);
-					this.devlingSprites[devling.name] = sprite;
+					this.renderInventory.render(userInventory);
+					// this.dialogue.startDialogue(
+					// 	[
+					// 		{
+					// 			text: `#23`,
+					// 			speaker: '',
+					// 			color: '#1f451c',
+					// 			persist: true,
+					// 		},
+					// 	],
+					// 	() => {},
+					// 	5,
+					// 	33
+					// );
 				}
 				console.log('devlings collected', userInventory);
 			}
@@ -191,33 +278,55 @@ export default class FirstFloor extends Phaser.Scene {
 
 		this.doorTrigger = this.physics.add
 			.sprite(560, 440)
-			.setSize(120, 55)
+			.setSize(110, 53)
 			.setVisible(false);
 		this.doorTriggered = false;
+
+		this.kitchenTrigger = this.physics.add
+			.sprite(555, 290)
+			.setSize(170, 70)
+			.setVisible(false);
+		this.kitchenTriggered = false;
 	}
 
 	handleTriggers(bounds) {
-		// const stairsHit = Phaser.Geom.Intersects.RectangleToRectangle(
-		// 	bounds,
-		// 	this.stairsTrigger.getBounds()
-		// );
+		//check if player exits via doorway
 		const doorHit = Phaser.Geom.Intersects.RectangleToRectangle(
 			bounds,
 			this.doorTrigger.getBounds()
 		);
-
-		// if (stairsHit && !this.stairsTriggered) {
-		// 	this.stairsTriggered = true;
-		// 	this.moveScene('secondFloor');
-		// } else if (!stairsHit) {
-		// 	this.stairsTriggered = false;
-		// }
-
-		if (doorHit && this.spaceKey.isDown && !this.doorTriggered) {
+		if (doorHit && !this.doorTriggered) {
 			this.doorTriggered = true;
 			this.moveScene('farmScene');
 		} else if (!doorHit) {
 			this.doorTriggered = false;
+		}
+
+		//check if player enters kitchen
+		const kitchenHit = Phaser.Geom.Intersects.RectangleToRectangle(
+			bounds,
+			this.kitchenTrigger.getBounds()
+		);
+		if (
+			kitchenHit &&
+			!this.kitchenTriggered &&
+			!this.dialogue.isDialogueRunning()
+		) {
+			this.kitchenTriggered = true;
+			this.dialogue.startDialogue(
+				[
+					{
+						text: `The kitchen is being renovated right now and will have fun things to do in future versions.`,
+						speaker: '',
+						color: '#1f451c',
+					},
+				],
+				null,
+				350,
+				125
+			);
+		} else if (!kitchenHit) {
+			this.kitchenTriggered = false;
 		}
 	}
 

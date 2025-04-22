@@ -7,7 +7,7 @@ export default class RenderInventory {
 		this.plotOffset = 0;
 	}
 
-	render(userInventory) {
+	render(userInventory, scene) {
 		const { add } = this.scene;
 
 		// Clean up existing UI
@@ -44,22 +44,25 @@ export default class RenderInventory {
 				invX += 40;
 			}
 
-			// Planted plot (dirt bed)
-			if (devling.isPlanted && !devling.isGrown) {
-				if (devling.plantX === undefined || devling.plantY === undefined) {
-					const row = Math.floor(this.plotOffset / 3);
-					const col = this.plotOffset % 3;
-					devling.plantX = plotX + col * 62;
-					devling.plantY = plotY + row * 65;
-				}
-				this.plotOffset++;
+			if (this.scene.scene.key === 'farmScene') {
+				console.log('farm scene sprites');
+				// Planted plot (dirt bed)
+				if (devling.isPlanted && !devling.isGrown) {
+					if (devling.plantX === undefined || devling.plantY === undefined) {
+						const row = Math.floor(this.plotOffset / 3);
+						const col = this.plotOffset % 3;
+						devling.plantX = plotX + col * 62;
+						devling.plantY = plotY + row * 65;
+					}
+					this.plotOffset++;
 
-				const plantedSprite = add.sprite(
-					devling.plantX,
-					devling.plantY,
-					'devlingImage'
-				);
-				this.plantedDevlingSprites[devling.name] = plantedSprite;
+					const plantedSprite = add.sprite(
+						devling.plantX,
+						devling.plantY,
+						'devlingImage'
+					);
+					this.plantedDevlingSprites[devling.name] = plantedSprite;
+				}
 			}
 		});
 	}

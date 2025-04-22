@@ -43,12 +43,9 @@ const config = {
 	},
 
 	scene: [
-
 		firstFloor,
 		battleScene,
-
 		farmScene,
-		firstFloor,
 		overworldScene,
 		preloadScene,
 		secondFloor,

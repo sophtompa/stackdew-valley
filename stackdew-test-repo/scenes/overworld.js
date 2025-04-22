@@ -17,7 +17,7 @@ export default class overworldScene extends Phaser.Scene {
 		//Where we spawn when coming FROM these locations
 		const spawnPoints = {
 			farmScene: { x: 320, y: 220 },
-			officeScene: {x: 560, y:190}
+			officeScene: {x: 500, y:190}
 		}
 
 		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
@@ -126,6 +126,7 @@ export default class overworldScene extends Phaser.Scene {
 			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			console.log("go to j.a!")
+			this.moveSceneNew('battleScene')
 				
 			this.arenaTriggered = true;}
 

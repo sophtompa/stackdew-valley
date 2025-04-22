@@ -1,6 +1,6 @@
 
 import Phaser from "phaser";
-import overworldScene from "../scenes/testScene.js";
+import overworldScene from "../scenes/overworld.js";
 import preloadScene from "../scenes/preloadScene.js";
 import firstFloor from "../scenes/firstFloor.js";
 import secondFloor from "../scenes/secondFloor.js";
@@ -10,6 +10,7 @@ import officeScene from "../scenes/officeScene.js";
 import battleScene from "../scenes/battleScene.js";
 import battleCardScene from "../scenes/battleCards.js";
 import pauseScene from '../scenes/pauseScene.js';
+// import trumpBattle from "../scenes/trumpScene.js";
 
 
 export class mainScene extends Phaser.Scene {
@@ -48,16 +49,16 @@ const config = {
 
 
   scene: [
+    firstFloor,
     preloadScene,
     farmScene,
     overworldScene,
-    firstFloor,
     secondFloor,
     ComputerScene,
     officeScene,
     battleScene,
     battleCardScene,
-  	pauseScene,
+  	pauseScene
   ],
 
 };

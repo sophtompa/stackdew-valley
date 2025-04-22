@@ -155,7 +155,7 @@ export default class farmScene extends Phaser.Scene {
 		propsLayer.setCollisionByProperty({ collide: true });
 		plotsLayer.setCollisionByProperty({ collide: true });
 
-		this.player = new Player(this, 275, 300, 'playerSheet');
+		this.player = new Player(this, this.spawnX, this.spawnY, 'playerSheet');
 
 		this.physics.add.collider(this.player, propsLayer);
 		this.physics.add.collider(this.player, plotsLayer);
@@ -245,7 +245,7 @@ export default class farmScene extends Phaser.Scene {
 			)
 		) {
 			this.input.keyboard.enabled = false;
-			this.moveScene('overworldScene');
+			this.moveSceneToOverworld('overworldScene');
 		}
 
 		//Plot for planting, watering, harvesting

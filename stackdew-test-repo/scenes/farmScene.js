@@ -10,6 +10,21 @@ export default class farmScene extends Phaser.Scene {
 		super('farmScene');
 	}
 
+	init(data) {
+		this.from = data.from;
+		console.log(this.from)
+		
+		//Where we spawn when coming FROM these locations
+		const spawnPoints = {
+			firstFloor: {x: 275, y: 300},
+			overworldScene: { x: 700, y: 370 },
+		}
+
+		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
+		this.spawnX = spawn.x;
+		this.spawnY = spawn.y;
+	}
+
 	preload() {
 		this.load.tilemapTiledJSON('theFarmMap', '../assets/chrisfarm.json');
 		this.load.image('1_Terrains_32x32', '../assets/1_Terrains_32x32.png');
@@ -104,8 +119,8 @@ export default class farmScene extends Phaser.Scene {
 		this.frontDoorTriggered = false;
 
 		// PATH to overWorldMap
-		this.toOverworldTrigger = this.physics.add.sprite(750, 365, null);
-		this.toOverworldTrigger.setSize(100, 110);
+		this.toOverworldTrigger = this.physics.add.sprite(775, 365, null);
+		this.toOverworldTrigger.setSize(40, 110);
 		this.toOverworldTrigger.setVisible(false);
 		this.toOverworldTriggered = false;
 
@@ -140,7 +155,9 @@ export default class farmScene extends Phaser.Scene {
 		propsLayer.setCollisionByProperty({ collide: true });
 		plotsLayer.setCollisionByProperty({ collide: true });
 
+
 		this.player = new Player(this, 275, 300, 'playerSheet');
+
 		this.physics.add.collider(this.player, propsLayer);
 		this.physics.add.collider(this.player, plotsLayer);
 
@@ -215,15 +232,24 @@ export default class farmScene extends Phaser.Scene {
 			});
 		}
 
+
 		//PATH to overworldmap
+		const toOverworldTriggerBody = this.toOverworldTrigger.body
 		if (
 			Phaser.Geom.Intersects.RectangleToRectangle(
 				playerBounds,
-				this.toOverworldTrigger.getBounds()
+				new Phaser.Geom.Rectangle(
+					toOverworldTriggerBody.x,
+					toOverworldTriggerBody.y,
+					toOverworldTriggerBody.width,
+					toOverworldTriggerBody.height,
+				)
 			)
 		) {
+<
 			this.input.keyboard.enabled = false;
 			this.moveScene('overworldScene');
+
 		}
 
 		//Plot for planting, watering, harvesting
@@ -252,6 +278,7 @@ export default class farmScene extends Phaser.Scene {
 			const harvestableIndex = userInventory.findIndex(
 				(devling) => devling.isPlanted && devling.isWatered && !devling.isGrown
 			);
+
 
 			if (unplanted) {
 				//plant
@@ -310,6 +337,7 @@ export default class farmScene extends Phaser.Scene {
 					20
 				);
 				this.isDialogueRunning = true;
+
 			}
 		}
 
@@ -430,6 +458,14 @@ export default class farmScene extends Phaser.Scene {
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
 			this.scene.start(sceneKey);
+		});
+	}
+
+	moveSceneToOverworld(sceneKey) {
+		this.input.keyboard.enabled = false;
+		this.cameras.main.fadeOut(500, 0, 0, 0);
+		this.time.delayedCall(500, () => {
+			this.scene.start(sceneKey, {from: 'farmScene'});
 		});
 	}
 

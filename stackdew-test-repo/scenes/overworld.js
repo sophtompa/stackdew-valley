@@ -10,8 +10,24 @@ export default class overworldScene extends Phaser.Scene {
 		super('overworldScene');
 	}
 
+	init(data) {
+		this.from = data.from;
+		console.log(this.from)
+		
+		//Where we spawn when coming FROM these locations
+		const spawnPoints = {
+			farmScene: { x: 320, y: 220 },
+			officeScene: {x: 560, y:190}
+		}
+
+		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
+		this.spawnX = spawn.x;
+		this.spawnY = spawn.y;
+	}
+
 	preload() {
 		this.load.tilemapTiledJSON('map', '../assets/overworld.JSON');
+		// this.load.tilemapTiledJSON('map', '../assets/overworldsophie.json');
 		this.load.image('mapImage', '../assets/1_Terrains_32x32.png');
 		this.load.spritesheet('playerSheet', '../assets/farmer.png', {
 			frameWidth: 64,
@@ -60,8 +76,9 @@ export default class overworldScene extends Phaser.Scene {
 		//create devling sprite images
 		// this.devlingSprites = {};
 
-		//create player and add collision rules
-		this.player = new Player(this, 250, 300, 'playerSheet');
+		//create player and add collision rules. Set spawn depending on scene change
+		this.player = new Player(this, this.spawnX, this.spawnY, 'playerSheet');
+
 		this.physics.add.collider(this.player, mapLayer);
 
 		//initialising space key
@@ -87,11 +104,12 @@ export default class overworldScene extends Phaser.Scene {
 		);
 		if (
 			isOverlappingFarm &&
-			!this.farmTriggered &&
-			Phaser.Input.Keyboard.JustDown(this.spaceKey)
+			!this.farmTriggered 
+			// &&
+			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			console.log("go to farm!")
-			this.moveScene('farmScene')
+			this.moveSceneNew('farmScene')
 
 			
 			this.farmTriggered = true;}
@@ -103,8 +121,9 @@ export default class overworldScene extends Phaser.Scene {
 		);
 		if (
 			isOverlappingArena &&
-			!this.arenaTriggered &&
-			Phaser.Input.Keyboard.JustDown(this.spaceKey)
+			!this.arenaTriggered 
+			// &&
+			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
 			console.log("go to j.a!")
 				
@@ -116,11 +135,12 @@ export default class overworldScene extends Phaser.Scene {
 			);
 			if (
 				isOverlappingJMarket &&
-				!this.jobMarketTriggered &&
-				Phaser.Input.Keyboard.JustDown(this.spaceKey)
+				!this.jobMarketTriggered 
+				// &&
+				// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 			) {
 				console.log("go to job market!")
-				this.moveScene('officeScene')
+				this.moveSceneNew('officeScene')
 		
 					
 					this.jobMarketTriggered = true;}
@@ -131,6 +151,14 @@ export default class overworldScene extends Phaser.Scene {
 			this.cameras.main.fadeOut(500, 0, 0, 0);
 			this.time.delayedCall(500, () => {
 				this.scene.start(sceneKey);
+			});
+		}
+
+		moveSceneNew(sceneKey) {
+			this.input.keyboard.enabled = false;
+			this.cameras.main.fadeOut(500, 0, 0, 0);
+			this.time.delayedCall(500, () => {
+				this.scene.start(sceneKey, {from: 'overworldScene'});
 			});
 		}
 }

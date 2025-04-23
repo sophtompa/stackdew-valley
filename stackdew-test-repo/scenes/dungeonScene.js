@@ -11,7 +11,7 @@ export default class dungeonScene extends Phaser.Scene {
     }
 
     preload() {
-		this.load.image('dungeon', '../assets/DungeonMap.png' )
+		this.load.image('dungeon', '../assets/newdungeon.png' )
 
 		this.load.spritesheet('playerSheet', '../assets/rose.png', {
 			frameWidth: 64,
@@ -31,8 +31,8 @@ export default class dungeonScene extends Phaser.Scene {
             this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
             this.player = new Player(this, this.spawnX, this.spawnY, 'playerSheet');
 
-            //enable keyboard
-		    this.input.keyboard.enabled = true;
+            // //enable keyboard
+		    // this.input.keyboard.enabled = true;
 
 		    //scene fades in
 		    this.cameras.main.fadeIn(1000, 0, 0, 0);
@@ -41,24 +41,26 @@ export default class dungeonScene extends Phaser.Scene {
             this.dialogue = new DialogueManager(this);
             this.isDialogueRunning = false;
     
-            //initialise render inventory
-            this.renderInventory = new renderInventory(this);
-            this.renderInventory.render(userInventory);
+            // //initialise render inventory
+            // this.renderInventory = new renderInventory(this);
+            // this.renderInventory.render(userInventory);
 
             //create new map
-		    this.add.image(400, 221, 'dungeon').setScale(0.85)
+		    this.add.image(400, 221, 'dungeon')
         }
 
         update() {
-                this.player.update();
-        
-                const playerBounds = new Phaser.Geom.Rectangle(
-                    this.player.x - this.player.width / 2 + 24,
-                    this.player.y - this.player.height / 2 + 38,
-                    15,
-                    8
-                );
+            if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+                this.moveScene();
+            }
+        }
 
-
-}
+        moveScene() {
+            this.input.keyboard.enabled = false;
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+            this.time.delayedCall(1000, () => {
+                this.scene.start('overworldScene', { from: 'dungeonScene' });
+                this.input.keyboard.enabled = true;
+            });
+        }
 }

@@ -46,14 +46,15 @@ const config = {
 	},
 
 	scene: [
+
 		titleScene,
+    development
 		firstFloor,
 		farmScene,
 		preloadScene,
 		overworldScene,
 		secondFloor,
 		ComputerScene,
-		officeScene,
 		battleScene,
 		battleCardScene,
 		pauseScene,

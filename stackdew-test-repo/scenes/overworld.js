@@ -20,6 +20,7 @@ export default class overworldScene extends Phaser.Scene {
 			farmScene: { x: 200, y: 220 },
 			officeScene: { x: 490, y: 130 },
 			battleScene: { x: 200, y: 275 },
+			dungeonScene: {x: 500, y: 320}
 		};
 
 		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
@@ -32,7 +33,7 @@ export default class overworldScene extends Phaser.Scene {
 		// this.load.image('mapImage', '../assets/1_Terrains_32x32.png');
 
 		// this.load.tilemapTiledJSON('map', '../assets/overworldsophie.json');
-		this.load.image('mapImage', '../assets/overworldsophie.png');
+		this.load.image('mapImage', '../assets/overworldsophienew.png');
 
 		this.load.spritesheet('playerSheet', '../assets/rose.png', {
 			frameWidth: 64,
@@ -82,7 +83,7 @@ export default class overworldScene extends Phaser.Scene {
 		this.jobMarketTriggered = false;
 
 		//create hidden trigger for tech dungeon
-		this.dungeonTrigger = this.physics.add.sprite(375, 375, null);
+		this.dungeonTrigger = this.physics.add.sprite(550, 375, null);
 		this.dungeonTrigger.setSize(150, 100);
 		this.dungeonTrigger.setVisible(false); 
 		this.dungeonTriggered = false; 
@@ -168,7 +169,7 @@ export default class overworldScene extends Phaser.Scene {
 
 		//set player map boundaries
 		const minX = 80;
-		const maxX = 500;
+		const maxX = 530;
 		const minY = 80;
 		const maxY = 350;
 

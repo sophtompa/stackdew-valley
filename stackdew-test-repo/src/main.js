@@ -77,7 +77,8 @@ function startGame() {
 			battleScene,
 			battleCardScene,
 			pauseScene,
-      dungeonScene,
+      		dungeonScene,
+			trumpBattle,
 		],
 	};
 	const game = new Phaser.Game(config);

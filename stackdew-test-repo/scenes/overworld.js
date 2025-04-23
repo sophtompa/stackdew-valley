@@ -243,24 +243,6 @@ export default class overworldScene extends Phaser.Scene {
 
 			
 			this.dungeonTriggered = true;}
-
-		}
-
-		const isOverlappingJMarket = Phaser.Geom.Intersects.RectangleToRectangle(
-			playerBounds,
-			this.jobMarketTrigger.getBounds()
-		);
-		if (
-			isOverlappingJMarket &&
-			!this.jobMarketTriggered
-			// &&
-			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
-		) {
-			console.log('go to job market!');
-			this.moveSceneNew('officeScene');
-
-			this.jobMarketTriggered = true;
-		}
 	}
 
 	moveScene(sceneKey) {

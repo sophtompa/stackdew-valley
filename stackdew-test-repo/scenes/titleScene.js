@@ -108,7 +108,7 @@ export default class TitleScene extends Phaser.Scene {
 			.setOrigin(0.5);
 
 		this.input.keyboard.on('keydown-SPACE', () => {
-			this.scene.start('firstFloor');
+			this.scene.start('loreScene');
 		});
 	}
 }

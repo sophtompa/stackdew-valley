@@ -7,7 +7,7 @@ export const database = [
     ego: 5,
     chess: 0,
     presenting: 4,
-    sprite: "../assets/head/james.png",
+    sprite: "../assets/heads/james.png",
     isPlanted: false,
     isWatered: false,
     isGrown: false,

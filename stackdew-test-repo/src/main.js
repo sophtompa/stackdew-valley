@@ -11,6 +11,7 @@ import battleCardScene from '../scenes/battleCards.js';
 import titleScene from '../scenes/titleScene.js';
 import pauseScene from '../scenes/pauseScene.js';
 // import trumpBattle from "../scenes/trumpScene.js";
+import dungeonScene from "../scenes/dungeonScene.js";
 
 export class mainScene extends Phaser.Scene {
 	constructor() {
@@ -53,6 +54,7 @@ function startGame() {
 			},
 		},
 
+
 		scene: [
 			titleScene,
 			firstFloor,
@@ -65,6 +67,7 @@ function startGame() {
 			battleScene,
 			battleCardScene,
 			pauseScene,
+      dungeonScene,
 		],
 	};
 	const game = new Phaser.Game(config);

@@ -85,6 +85,8 @@ export default class farmScene extends Phaser.Scene {
 							text: `Press Space to interact with it.`,
 							speaker: '',
 							color: '#1f451c',
+							x: 370,
+							y: 20,
 						},
 						{
 							text: `Devlings need to be planted, watered then harvested.`,
@@ -169,6 +171,13 @@ export default class farmScene extends Phaser.Scene {
 
 		this.renderInventory.render(userInventory);
 		this.birdSound.play();
+
+		//scarecrow Stephen's message of the day
+		this.scarecrowMessagePlayed = false;
+		const randomDelay = Phaser.Math.Between(21000, 24000);
+		this.time.delayedCall(randomDelay, () => {
+			this.tryTriggerScarecrowMessage();
+		});
 	}
 
 	update() {
@@ -300,23 +309,6 @@ export default class farmScene extends Phaser.Scene {
 				console.log(devling.name, 'has grown and has been harvested!');
 				this.harvestingSound.play();
 				this.renderInventory.render(userInventory);
-
-				// this.isDialogueRunning = true;
-				// this.dialogue.startDialogue(
-				// 	[
-				// 		{
-				// 			text: `Harvested Devling!`,
-				// 			speaker: '',
-				// 			color: '#1f451c',
-				// 		},
-				// 	],
-				// 	() => {
-				// 		this.isDialogueRunning = false;
-				// 	},
-				// 	435,
-				// 	40
-				// );
-				// this.isDialogueRunning = true;
 			} else {
 				//nothing to do
 				this.dialogue.startDialogue(
@@ -336,116 +328,6 @@ export default class farmScene extends Phaser.Scene {
 				this.isDialogueRunning = true;
 			}
 		}
-
-		//  {
-		// 	//check user has devlings to plant or water
-		// 	const hasUnplanted = userInventory.some(
-		// 		(devling) => !devling.isPlanted && !devling.isGrown
-		// 	);
-		// 	const hasUnwatered = userInventory.some(
-		// 		(devling) => devling.isPlanted && !devling.isWatered && !devling.isGrown
-		// 	);
-		// 	const grown = userInventory.some(
-		// 		(devling) => devling.isPlanted && devling.isWatered
-		// 	);
-
-		// 	const hasGrown = userInventory.some((devling) => devling.isGrown);
-		// 	this.renderInventory.render(userInventory);
-
-		// 	//if unplanted, we plant
-		// 	if (hasUnplanted) {
-		// 		for (let i = 0; i < userInventory.length; i++) {
-		// 			if (userInventory[i].isPlanted === false) {
-		// 				userInventory[i].isPlanted = true;
-
-		// 				localStorage.setItem(
-		// 					'userInventory',
-		// 					JSON.stringify(userInventory)
-		// 				);
-		// 				this.plantingSound.play();
-		// 				console.log('planting', userInventory[i]);
-		// 				this.renderInventory.render(userInventory);
-		// 				break;
-		// 			}
-		// 		}
-		// 	} else if (!hasUnplanted && !hasUnwatered && !hasGrown && !grown) {
-		// 		//no devlings to plant/water/harvest
-		// 		this.dialogue.startDialogue(
-		// 			[
-		// 				{
-		// 					text: `Nothing to do here right now...`,
-		// 					speaker: '',
-		// 					color: '#1f451c',
-		// 				},
-		// 			],
-		// 			() => {
-		// 				//reset isDialogueRunning after the dialogue is complete via callback
-		// 				this.isDialogueRunning = false;
-		// 			},
-		// 			385,
-		// 			20
-		// 		);
-		// 		this.isDialogueRunning = true;
-		// 	}
-
-		// 	//If all planted and not watered, we water
-		// 	else if (hasUnwatered) {
-		// 		for (let i = 0; i < userInventory.length; i++) {
-		// 			if (
-		// 				userInventory[i].isPlanted === true &&
-		// 				userInventory[i].isWatered === false &&
-		// 				userInventory[i].isGrown === false
-		// 			) {
-		// 				userInventory[i].isWatered = true;
-		// 				this.wateringSound.play({ volume: 0.5 });
-		// 				//this.jiggleSprite(plantedSprite[userInventory[i].name]);
-		// 				console.log('watering', userInventory[i].name);
-		// 				this.renderInventory.render(userInventory);
-		// 				break;
-		// 			}
-		// 		}
-		// 	}
-
-		// 	//If grown, we can harvest. Currently grown = has been planted and watered.
-		// 	else if (grown) {
-		// 		for (let i = 0; i < userInventory.length; i++) {
-		// 			if (userInventory[i].isGrown === false) {
-		// 				userInventory[i].isGrown = true;
-		// 				userInventory[i].isPlanted = false;
-		// 				userInventory[i].isWatered = false;
-
-		// 				console.log(
-		// 					userInventory[i].name,
-		// 					'has grown and has been harvested!'
-		// 				);
-		// 				this.harvestingSound.play();
-		// 				this.renderInventory.render(userInventory);
-		// 				this.dialogue.startDialogue(
-		// 					[
-		// 						{
-		// 							text: `Harvested Devling!`,
-		// 							speaker: '',
-		// 							color: '#1f451c',
-		// 						},
-		// 					],
-		// 					() => {
-		// 						//reset isDialogueRunning after the dialogue is complete via callback
-		// 						this.isDialogueRunning = false;
-		// 					},
-		// 					435,
-		// 					40
-		// 				);
-		// 				this.isDialogueRunning = true;
-		// 				break;
-		// 			}
-		// 		}
-		// 	}
-
-		// 	if (Phaser.Input.Keyboard.JustUp(this.spaceKey)) {
-		// 		this.plantingInProgress = false;
-		// 		this.wateringInProgress = false;
-		// 	}
-		// }
 	}
 
 	moveScene(sceneKey) {
@@ -477,5 +359,51 @@ export default class farmScene extends Phaser.Scene {
 				sprite.x = sprite.x - 3; // reset to original position just in case
 			},
 		});
+	}
+
+	tryTriggerScarecrowMessage() {
+		if (this.scarecrowMessagePlayed) return;
+
+		if (!this.isDialogueRunning) {
+			this.scarecrowMessagePlayed = true;
+			this.isDialogueRunning = true;
+
+			const message = this.getScarecrowMessage();
+			console.log(message);
+			this.dialogue.startDialogue(
+				[
+					{
+						text: message,
+						speaker: 'right',
+						color: '#1f451c',
+					},
+				],
+				() => {
+					this.isDialogueRunning = false;
+				},
+				310,
+				70
+			);
+		} else {
+			//try again after 3 seconds if dialogue is already running
+			this.time.delayedCall(3000, () => {
+				this.tryTriggerScarecrowMessage();
+			});
+		}
+	}
+
+	getScarecrowMessage() {
+		const days = [
+			'Ah, lazy Sunday. The most chill day of all.',
+			'Happy Monday Coders! Did you have a nice weekend?',
+			'Tuesday is a great day to learn new code!',
+			'Wednesday! Its all downhill to the weekend from here...',
+			'Thursday is like Friday for Friday. Thats syntactic sugar baby!',
+			'Fri-YAY! Amirite?',
+			'Its the weekend. Make the most of it!',
+		];
+
+		const today = new Date().getDay();
+		return days[today];
 	}
 }

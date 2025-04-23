@@ -1,15 +1,16 @@
-import Phaser from "phaser";
-import overworldScene from "../scenes/overworld.js";
-import preloadScene from "../scenes/preloadScene.js";
-import firstFloor from "../scenes/firstFloor.js";
-import secondFloor from "../scenes/secondFloor.js";
-import farmScene from "../scenes/farmScene.js";
-import ComputerScene from "../scenes/computerScene.js";
-import officeScene from "../scenes/officeScene.js";
-import battleScene from "../scenes/battleScene.js";
-import battleCardScene from "../scenes/battleCards.js";
-import titleScene from "../scenes/titleScene.js";
-import pauseScene from "../scenes/pauseScene.js";
+import Phaser from 'phaser';
+import overworldScene from '../scenes/overworld.js';
+import preloadScene from '../scenes/preloadScene.js';
+import firstFloor from '../scenes/firstFloor.js';
+import secondFloor from '../scenes/secondFloor.js';
+import farmScene from '../scenes/farmScene.js';
+import ComputerScene from '../scenes/computerScene.js';
+import officeScene from '../scenes/officeScene.js';
+import battleScene from '../scenes/battleScene.js';
+import battleCardScene from '../scenes/battleCards.js';
+import titleScene from '../scenes/titleScene.js';
+import loreScene from '../scenes/loreScene.js';
+import pauseScene from '../scenes/pauseScene.js';
 import trumpBattle from "../scenes/trumpScene.js";
 import dungeonScene from "../scenes/dungeonScene.js";
 
@@ -56,21 +57,23 @@ function startGame() {
       },
     },
 
-    scene: [
-      trumpBattle,
-      titleScene,
-      firstFloor,
-      farmScene,
-      preloadScene,
-      overworldScene,
-      secondFloor,
-      officeScene,
-      ComputerScene,
-      battleScene,
-      battleCardScene,
-      pauseScene,
+		scene: [
+			titleScene,
+			loreScene,
+			firstFloor,
+			farmScene,
+			preloadScene,
+			overworldScene,
+			secondFloor,
+			officeScene,
+			ComputerScene,
+			battleScene,
+			battleCardScene,
+			pauseScene,
       dungeonScene,
-    ],
-  };
-  const game = new Phaser.Game(config);
+			trumpBattle,
+		],
+	};
+	const game = new Phaser.Game(config);
+
 }

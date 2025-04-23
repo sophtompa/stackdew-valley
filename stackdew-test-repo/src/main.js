@@ -11,6 +11,7 @@ import battleScene from "../scenes/battleScene.js";
 import battleCardScene from "../scenes/battleCards.js";
 import pauseScene from '../scenes/pauseScene.js';
 // import trumpBattle from "../scenes/trumpScene.js";
+import dungeonScene from "../scenes/dungeonScene.js";
 
 
 export class mainScene extends Phaser.Scene {
@@ -58,7 +59,8 @@ const config = {
     officeScene,
     battleScene,
     battleCardScene,
-  	pauseScene
+  	pauseScene,
+    dungeonScene,
   ],
 
 };

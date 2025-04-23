@@ -87,6 +87,13 @@ export default class overworldScene extends Phaser.Scene {
 		this.jobMarketTrigger.setVisible(false); 
 		this.jobMarketTriggered = false; 
 
+		//create hidden trigger for tech dungeon
+		this.dungeonTrigger = this.physics.add.sprite(375, 375, null);
+		this.dungeonTrigger.setSize(150, 100);
+		this.dungeonTrigger.setVisible(false); 
+		this.dungeonTriggered = false; 
+
+
 		//create devling sprite images
 		// this.devlingSprites = {};
 
@@ -210,7 +217,8 @@ export default class overworldScene extends Phaser.Scene {
 			this.moveSceneNew('battleScene')
 				
 			this.arenaTriggered = true;}
-
+		
+		//create office scene overlap rules
 		const isOverlappingJMarket = Phaser.Geom.Intersects.RectangleToRectangle(
 				playerBounds,
 				this.jobMarketTrigger.getBounds()
@@ -226,6 +234,23 @@ export default class overworldScene extends Phaser.Scene {
 		
 					
 					this.jobMarketTriggered = true;}
+		
+
+		const isOverlappingDungeon = Phaser.Geom.Intersects.RectangleToRectangle(
+			playerBounds,
+			this.dungeonTrigger.getBounds()
+		);
+		if (
+			isOverlappingDungeon &&
+			!this.dungeonTriggered 
+			// &&
+			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
+		) {
+			console.log("go to dungeon!")
+			this.moveSceneNew('dungeonScene')
+
+			
+			this.dungeonTriggered = true;}
 		}
 
 		moveScene(sceneKey) {

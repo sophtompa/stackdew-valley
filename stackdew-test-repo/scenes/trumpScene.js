@@ -7,16 +7,26 @@ export default class trumpBattle extends Phaser.Scene {
   }
 
   preload() {
+    //background image
     this.load.image("background", "../assets/battleroof.png");
-    this.load.image("playerCard", "../assets/dummyCard.png");
-    this.load.image("enemyCard", "../assets/cardDesign.png");
-    this.load.image("front", "../assets/cardFront.png");
-    this.load.image("back", "../assets/cardBack.png");
-    this.load.image("enemyfront", "../assets/enemyCardFront.png");
-    this.load.image("enemyback", "../assets/enemycardBack.png");
+
+    this.load.image("playerCard", "../assets/cardDesign/cardFront.png");
+    // this.load.image("enemyCard", "../assets/cardDesign.png");
+
+    //player card image (front of card)
+    this.load.image("front", "../assets/cardDesign/cardFront.png");
+    // this.load.image("front", "../assets/cardFront.png");
+
+    //enemy card images (back and front of card)
+    // this.load.image("enemyfront", "../assets/cardDesign/redCardFront.png");
+    this.load.image("enemyfront", "../assets/cardDesign/cardFront.png");
+    this.load.image("enemyback", "../assets/cardDesign/redCardBack.png");
+
+    //nav sounds
     this.load.audio("nav", "../assets/sounds/keypad.mp3");
     this.load.audio("select", "../assets/sounds/select1.mp3");
     this.load.audio("error", "../assets/sounds/keypadReject.mp3");
+
     this.load.audio("roundOne", "../assets/sounds/roundOne.mp3");
     this.load.audio("roundTwo", "../assets/sounds/roundtwo.mp3");
     this.load.audio("finalRound", "../assets/sounds/finalRound.mp3");
@@ -73,10 +83,10 @@ export default class trumpBattle extends Phaser.Scene {
     this.enemyHealthBar.flipX = true;
 
     //VERTICAL DISTANCE FOR PLAYER CARD
-    let statY = centerY + 75;
+    let statY = centerY + 73;
 
     //==PLAYER DEVLING CARD==
-    this.add.image(centerX - 200, centerY + 50, "front").setScale(0.9);
+    this.add.image(centerX - 150, centerY + 50, "front").setScale(0.9);
 
     //NAME
     this.playerCardName = this.playerDevling.name;
@@ -85,7 +95,7 @@ export default class trumpBattle extends Phaser.Scene {
     //NAME TEXT
     this.playerCardName = this.add
       .text(
-        centerX - 200,
+        centerX - 150,
         centerY + 55,
         this.playerDevling.name.toUpperCase(),
         this.cardTextStyle()
@@ -96,7 +106,7 @@ export default class trumpBattle extends Phaser.Scene {
     //==ENEMY DEVLING CARD==
     this.enemyCard = this.add
       .image(centerX + 200, centerY + 50, "enemyfront")
-      .setScale(0.8)
+      .setScale(0.9)
       .setOrigin(0.5);
 
     // ENEMY NAME
@@ -127,7 +137,7 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.statKeys.forEach((stat, i) => {
       //NAME COLUMN
-      const nameText = this.add.text(centerX / 2.2, statY, stat.toUpperCase(), {
+      const nameText = this.add.text(centerX / 2.3, statY, stat.toUpperCase(), {
         fontSize: "10px",
         fontFamily: '"Press Start 2P"',
         fill: i === this.currentStatIndex ? "green" : "black",
@@ -135,7 +145,7 @@ export default class trumpBattle extends Phaser.Scene {
 
       //LVL COLUMN
       const lvlText = this.add.text(
-        centerX / 1.6,
+        centerX - 142,
         statY,
         `   LVL${this.playerDevling[stat]}`,
         {
@@ -146,7 +156,7 @@ export default class trumpBattle extends Phaser.Scene {
       );
 
       this.statTextList.push({ name: nameText, lvl: lvlText });
-      statY += 20;
+      statY += 15;
     });
 
     //==KEYBOARD CONTROLS==

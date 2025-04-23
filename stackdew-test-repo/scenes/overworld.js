@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import Player from '../src/player.js';
+import DialogueManager from '../src/dialogueManager.js';
+import renderInventory from '../src/renderInventory.js';
 import farmScene from '../scenes/farmScene.js';
 import officeScene from '../scenes/officeScene.js';
-
-// import { database, userInventory } from '../src/dummydata.js';
+import { database, userInventory } from '../src/dummydata.js';
 
 export default class overworldScene extends Phaser.Scene {
 	constructor() {
@@ -16,8 +17,9 @@ export default class overworldScene extends Phaser.Scene {
 		
 		//Where we spawn when coming FROM these locations
 		const spawnPoints = {
-			farmScene: { x: 320, y: 220 },
-			officeScene: {x: 500, y:190}
+			farmScene: { x: 200, y: 220 },
+			officeScene: {x: 490, y:130},
+			battleScene: {x:200, y: 275}
 		}
 
 		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
@@ -26,10 +28,13 @@ export default class overworldScene extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.tilemapTiledJSON('map', '../assets/overworld.JSON');
+		// this.load.tilemapTiledJSON('map', '../assets/overworld.JSON');
+		// this.load.image('mapImage', '../assets/1_Terrains_32x32.png');
+
 		// this.load.tilemapTiledJSON('map', '../assets/overworldsophie.json');
-		this.load.image('mapImage', '../assets/1_Terrains_32x32.png');
-		this.load.spritesheet('playerSheet', '../assets/farmer.png', {
+		this.load.image('mapImage', '../assets/overworldsophie.png' )
+
+		this.load.spritesheet('playerSheet', '../assets/rose.png', {
 			frameWidth: 64,
 			frameHeight: 64,
 		});
@@ -47,43 +52,108 @@ export default class overworldScene extends Phaser.Scene {
 		//scene fades in
 		this.cameras.main.fadeIn(1000, 0, 0, 0);
 
-		// create map
-		const map = this.make.tilemap({ key: 'map' });
-		const tilesets = map.addTilesetImage('1_Terrains_32x32', 'mapImage');
-		const mapLayer = map.createLayer('grass', tilesets, 0, 0);
-		mapLayer.setCollisionByProperty({ collide: true });
-		this.locationLayer = map.createLayer('locations', tilesets, 0, 0);
-		this.locationLayer.setCollisionByProperty({ collide: true });
+		
+
+		// // // create map
+		// const map = this.make.tilemap({ key: 'overworldMap' });
+		// const tilesets = map.addTilesetImage('overworldsophie', 'mapImage');
+		// map.createLayer('Tile Layer 1', tilesets, 0, 0);
+
+	
+
+
+		// mapLayer.setCollisionByProperty({ collide: true });
+		// this.locationLayer = map.createLayer('locations', tilesets, 0, 0);
+		// this.locationLayer.setCollisionByProperty({ collide: true });
+
+		//create new map
+		this.add.image(400, 221, 'mapImage')
 
 		//create hidden trigger sprite for farm scene
-		this.farmTrigger = this.physics.add.sprite(272, 240, null);
-		this.farmTrigger.setSize(42, 42);
+		this.farmTrigger = this.physics.add.sprite(200, 150, null);
+		this.farmTrigger.setSize(125, 80);
 		this.farmTrigger.setVisible(false);
 		this.farmTriggered = false;
 
 		//create hidden trigger for job arena scene
-		this.arenaTrigger = this.physics.add.sprite(272, 400, null);
-		this.arenaTrigger.setSize(42, 42);
+		this.arenaTrigger = this.physics.add.sprite(150, 350, null);
+		this.arenaTrigger.setSize(150, 60);
 		this.arenaTrigger.setVisible(false);
 		this.arenaTriggered = false;
 
 		//create hidden trigger for job market scene
-		this.jobMarketTrigger = this.physics.add.sprite(592, 208, null);
-		this.jobMarketTrigger.setSize(42, 42);
-		this.jobMarketTrigger.setVisible(false);
-		this.jobMarketTriggered = false;
+		this.jobMarketTrigger = this.physics.add.sprite(450, 70, null);
+		this.jobMarketTrigger.setSize(150, 100);
+		this.jobMarketTrigger.setVisible(false); 
+		this.jobMarketTriggered = false; 
 
 		//create devling sprite images
 		// this.devlingSprites = {};
 
 		//create player and add collision rules. Set spawn depending on scene change
 		this.player = new Player(this, this.spawnX, this.spawnY, 'playerSheet');
-
-		this.physics.add.collider(this.player, mapLayer);
+		// this.physics.add.collider(this.player, mapLayer);
+	
 
 		//initialising space key
 		this.spaceKey = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
+		);
+		
+
+		//initialise render inventory
+        this.renderInventory = new renderInventory(this);
+        this.renderInventory.render(userInventory);
+
+
+
+
+		//initialise dialogue
+		this.dialogue = new DialogueManager(this);
+        this.isDialogueRunning = false;
+
+		this.dialogue.startDialogue(
+			[
+				{
+					text: 'Harvested Devlings need to be taken South West to the ...',
+					speaker: '',
+					color: '#1f451c',
+	 			    x: 200,
+	  			    y: 350,
+				},
+				{
+					text: 'JOB MARKET!!!',
+					speaker: '',
+					color: '#1f451c',
+	  x: 250,
+	  y: 350,
+				},
+				{
+					text: 'The StackDew Valley Farm is to the North West.',
+					speaker: '',
+					color: '#1f451c',
+	  x: 200,
+	  y: 350,
+				},
+				{
+					text: 'To the North East you can visit Devlings who have acquired Gainful Employment.',
+					speaker: '',
+					color: '#1f451c',
+	  x: 200,
+	  y: 350,
+				},
+				{
+					text: 'Other visitable areas may appear in future updates...',
+					speaker: '',
+					color: '#1f451c',
+	  x: 200,
+	  y: 350,
+				},
+
+			],
+			null,
+			0,
+			0
 		);
 	}
 
@@ -96,6 +166,17 @@ export default class overworldScene extends Phaser.Scene {
 			15,
 			8
 		);
+
+		//set player map boundaries
+		const minX = 80;
+ 		const maxX = 500;
+   		const minY = 80;
+ 	  	const maxY = 350;
+
+    // Clamp player's position within bounds
+    this.player.x = Phaser.Math.Clamp(this.player.x, minX, maxX);
+    this.player.y = Phaser.Math.Clamp(this.player.y, minY, maxY);
+
 
 		//create farmTrigger overlap rules
 		const isOverlappingFarm = Phaser.Geom.Intersects.RectangleToRectangle(

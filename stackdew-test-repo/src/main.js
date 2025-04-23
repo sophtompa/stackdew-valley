@@ -1,4 +1,3 @@
-
 import Phaser from "phaser";
 import overworldScene from "../scenes/overworld.js";
 import preloadScene from "../scenes/preloadScene.js";
@@ -9,9 +8,9 @@ import ComputerScene from "../scenes/computerScene.js";
 import officeScene from "../scenes/officeScene.js";
 import battleScene from "../scenes/battleScene.js";
 import battleCardScene from "../scenes/battleCards.js";
-import pauseScene from '../scenes/pauseScene.js';
+import pauseScene from "../scenes/pauseScene.js";
+import trumpBattle from "../scenes/trumpScene.js";
 // import trumpBattle from "../scenes/trumpScene.js";
-
 
 export class mainScene extends Phaser.Scene {
   constructor() {
@@ -22,11 +21,10 @@ export class mainScene extends Phaser.Scene {
 //blah
 
 const config = {
-	type: Phaser.AUTO,
-	width: 800,
-	height: 448,
-	backgroundColor: '#2d2d2d',
-
+  type: Phaser.AUTO,
+  width: 800,
+  height: 448,
+  backgroundColor: "#2d2d2d",
 
   // config to being able to get the dom and have input for computerScene
   parent: "game-container",
@@ -47,20 +45,19 @@ const config = {
     },
   },
 
-
   scene: [
+    trumpBattle,
+    officeScene,
     firstFloor,
-    preloadScene,
     farmScene,
+    preloadScene,
     overworldScene,
     secondFloor,
     ComputerScene,
-    officeScene,
     battleScene,
     battleCardScene,
-  	pauseScene
+    pauseScene,
   ],
-
 };
 
 const game = new Phaser.Game(config);

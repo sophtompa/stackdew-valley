@@ -1,35 +1,41 @@
 import Phaser from 'phaser';
 import DialogueManager from '../src/dialogueManager.js';
 import renderInventory from '../src/renderInventory.js';
-import { database, userInventory } from '../src/dummydata.js';
+import { userInventory } from '../src/dummydata.js';
 
 export default class officeScene extends Phaser.Scene {
 	constructor() {
 		super('officeScene');
 	}
-	//similar scene ould be added for player resting, switch map to show character in bed perhaps
+
 	preload() {
-		this.load.tilemapTiledJSON('dummyOfficeMap', 'assets/dummyOfficeMap.json');
 		this.load.image('dummyOfficeMap', 'assets/dummyOfficeMap.png');
 		this.load.audio('speechSound', '../assets/speechSound.wav');
 	}
 
 	create() {
-		//initialise dialogue manager
 		this.dialogue = new DialogueManager(this);
-
-		//initialise render inventory
 		this.renderInventory = new renderInventory(this);
 		this.renderInventory.render(userInventory);
 
-		const map = this.make.tilemap({ key: 'dummyOfficeMap' });
-		const tileset = map.addTilesetImage('dummyOfficeMap', 'dummyOfficeMap');
-		const mapLayer = map.createLayer('Tile Layer 1', tileset, 0, 0);
+		const centerX = this.cameras.main.centerX;
+		const centerY = this.cameras.main.centerY;
 
-		this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+		// Add and center the image
+		const officeImage = this.add
+			.image(centerX, centerY + 120, 'dummyOfficeMap')
+			.setOrigin(0.5);
+
+		// Optional: Scale image to fit more of the screen
+		const scaleX = this.cameras.main.width / officeImage.width;
+		const scaleY = this.cameras.main.height / officeImage.height;
+		const scale = Math.min(scaleX * 2.2, scaleY * 1.6);
+
+		officeImage.setScale(scale);
+
+		// Fade in effect
 		this.cameras.main.fadeIn(1000, 0, 0, 0);
 
-		//SPACE key for the scene transitions, player not actively in scene
 		this.spaceKey = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		);
@@ -50,19 +56,19 @@ export default class officeScene extends Phaser.Scene {
 					text: `I love my job.`,
 					speaker: 'left',
 					color: '#1f451c',
-					x: 420,
-					y: 30,
+					x: 260,
+					y: 40,
 				},
 				{
 					text: `Thanks CorthNoders!`,
 					speaker: 'left',
 					color: '#1f451c',
-					x: 420,
-					y: 30,
+					x: 260,
+					y: 40,
 				},
 			],
 			null,
-			100,
+			220,
 			365
 		);
 	}

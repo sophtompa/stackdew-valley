@@ -5,16 +5,16 @@ export default class TitleScene extends Phaser.Scene {
 		super('titleScene');
 	}
 
-	preload() {
-		// WebFont.load({
-		// 	google: {
-		// 		families: ['VT323', 'Press Start 2P', 'Silkscreen'],
-		// 	},
-		// 	active: () => {},
-		// });
-	}
+	preload() {}
 
 	create() {
+		this.cameras.main.setBackgroundColor('#000000');
+		this.cameras.main.fadeOut(0);
+
+		//wait 500ms, then fade in over 1000ms
+		this.time.delayedCall(500, () => {
+			this.cameras.main.fadeIn(1000, 0, 0, 0);
+		});
 		const centerX = this.cameras.main.centerX;
 		const centerY = this.cameras.main.centerY;
 
@@ -41,8 +41,7 @@ export default class TitleScene extends Phaser.Scene {
 			panelHeight,
 			borderRadius
 		);
-		panel.setDepth(0); // Background layer
-
+		panel.setDepth(0);
 		this.add
 			.text(centerX, centerY - 110, 'StackDew Valley', {
 				fontFamily: 'VT323',

@@ -1,5 +1,6 @@
 import { database } from "/src/dummydata.js";
 import { enemyDevlings } from "../src/enemyDevlingData";
+import DevlingHead from "../src/devlingHead";
 
 export default class trumpBattle extends Phaser.Scene {
   constructor() {
@@ -46,6 +47,16 @@ export default class trumpBattle extends Phaser.Scene {
     this.load.image("roundOneImg", "../assets/roundOneImg.png");
 
     this.load.image("QuestionMarks", "../assets/questionMarks.png");
+
+    database.forEach((devling) => {
+      if (!devling.sprite) return;
+      this.load.atlas(devling.name, devling.sprite);
+    });
+
+    enemyDevlings.forEach((devling) => {
+      if (!devling.sprite) return;
+      this.load.atlas(devling.name, devling.sprite);
+    });
   }
 
   create() {
@@ -73,7 +84,7 @@ export default class trumpBattle extends Phaser.Scene {
     this.isFirstRound = true;
 
     //==CHOSEN PLAYER & ENEMY DEVLING
-    this.playerDevling = database[4];
+    this.playerDevling = database[0];
     this.enemyDevling = enemyDevlings[0];
 
     //
@@ -87,6 +98,22 @@ export default class trumpBattle extends Phaser.Scene {
 
     //==PLAYER DEVLING CARD==
     this.add.image(centerX - 150, centerY + 50, "front").setScale(0.9);
+
+    this.playerHead = new DevlingHead(
+      this,
+      centerX / 1.6,
+      centerY - 10,
+      this.playerDevling
+    );
+    this.playerHead.setScale(2);
+
+    this.enemyHead = new DevlingHead(
+      this,
+      centerX / 1.6,
+      centerY - 10,
+      this.playerDevling
+    );
+    this.playerHead.setScale(2);
 
     //NAME
     this.playerCardName = this.playerDevling.name;

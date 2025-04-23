@@ -286,7 +286,7 @@ export default class trumpBattle extends Phaser.Scene {
               ? `${this.devlingName} wins the match`
               : "Enemy devling wins the match"
           );
-          this.time.delayedCall(2000, () => this.scene.start("overworldScene"));
+          this.time.delayedCall(2000, () => this.moveScene('overworldScene'));
         });
       } else {
         this.time.delayedCall(4000, () => {
@@ -400,4 +400,14 @@ export default class trumpBattle extends Phaser.Scene {
     this.playerHealthBar.setTexture(getHeathBarSprite(this.playerLives));
     this.enemyHealthBar.setTexture(getHeathBarSprite(this.enemyLives));
   }
+
+  moveScene() {
+    this.sound.stopAll();
+    this.input.keyboard.enabled = false;
+    this.cameras.main.fadeOut(1000, 0, 0, 0);
+    this.time.delayedCall(1000, () => {
+        this.scene.start('overworldScene', { from: 'trumpScene' });
+        this.input.keyboard.enabled = true;
+    });
+}
 }

@@ -20,7 +20,8 @@ export default class overworldScene extends Phaser.Scene {
 			farmScene: { x: 200, y: 220 },
 			officeScene: { x: 490, y: 130 },
 			battleScene: { x: 200, y: 275 },
-			dungeonScene: {x: 500, y: 320}
+			dungeonScene: {x: 500, y: 320},
+			trumpScene: {x: 200, y: 275}
 		};
 
 		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };

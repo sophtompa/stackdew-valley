@@ -173,7 +173,8 @@ export default class farmScene extends Phaser.Scene {
 
 	update() {
 		this.player.update();
-		this.renderInventory.render(userInventory);
+		//removed becauese it was breaking the new watering graphic
+		//this.renderInventory.render(userInventory);
 
 		// pause toggle
 		if (Phaser.Input.Keyboard.JustDown(this.pKey)) {
@@ -285,6 +286,7 @@ export default class farmScene extends Phaser.Scene {
 			} else if (unwatered) {
 				//water
 				unwatered.isWatered = true;
+				unwatered.isWateredTweenActive = false;
 				this.wateringSound.play({ volume: 0.5 });
 				console.log('watering', unwatered.name);
 				this.renderInventory.render(userInventory);

@@ -8,7 +8,6 @@ export default class DevlingHead extends Phaser.GameObjects.Sprite {
 
     scene.add.existing(this);
 
-    //checking if spritesheet has been loaded
     const spriteKey = devling.name;
     const spriteIMG = devling.sprite;
 
@@ -19,7 +18,6 @@ export default class DevlingHead extends Phaser.GameObjects.Sprite {
         endFrame: 30,
       });
 
-      //immediately idle
       scene.load.once("complete", () => {
         this.createAnimations();
         this.playAnimation("idle");
@@ -27,29 +25,33 @@ export default class DevlingHead extends Phaser.GameObjects.Sprite {
 
       scene.load.start();
     } else {
-      //if is loaded, immediately play animations & idle
       this.createAnimations();
       this.playAnimation("idle");
+
+      this.scene.time.addEvent({
+        delay: 10000,
+        loop: true,
+        callback: () => {
+          this.playAnimation("idle");
+        },
+      });
     }
   }
 
-  //all curr animations
+  //curr animations
   createAnimations() {
     const name = this.devling.name;
 
     const animationsToCreate = [
-      //talking
-      { key: "idle", start: 0, end: 9 },
-      //nodding head
+      { key: "idle", start: 0, end: 3 },
+      { key: "talk", start: 0, end: 9 },
       { key: "win", start: 10, end: 19 },
-      //shacking head
       { key: "lose", start: 20, end: 29 },
     ];
 
     animationsToCreate.forEach((anim) => {
       const fullKey = `${name}-${anim.key}`;
 
-      // Only create the animation if it doesn't already exist
       if (!this.scene.anims.exists(fullKey)) {
         this.scene.anims.create({
           key: fullKey,
@@ -58,19 +60,24 @@ export default class DevlingHead extends Phaser.GameObjects.Sprite {
             end: anim.end,
           }),
           frameRate: 10,
-          repeat: anim.key === "idle" ? -1 : 0, // Loop idle forever, others play once
+          repeat: 0,
         });
       }
     });
   }
 
-  // This plays a given animation type (idle, win, or lose)
   playAnimation(type) {
     const animKey = `${this.devling.name}-${type}`;
 
-    // Only play the animation if it's not already playing
     if (!this.anims.currentAnim || this.anims.currentAnim.key !== animKey) {
       this.play(animKey, true);
+
+      if (type) {
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+          this.stop();
+          this.setFrame(0);
+        });
+      }
     }
   }
 }

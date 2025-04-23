@@ -45,17 +45,20 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.load.audio("backgroundMusic", "../assets/sounds/backgroundMusic.wav");
     this.load.image("roundOneImg", "../assets/roundOneImg.png");
+    this.load.image("roundTwoImg", "../assets/roundTwoImg.png");
+    this.load.image("finalRoundImg", "../assets/finalRoundImg.png");
 
     this.load.image("QuestionMarks", "../assets/questionMarks.png");
 
     database.forEach((devling) => {
-      if (!devling.sprite) return;
-      this.load.atlas(devling.name, devling.sprite);
+      if (!devling.sprite || !devling.nameSound) return;
+      this.load.audio(`${devling.name}Sound`, devling.nameSound);
     });
 
     enemyDevlings.forEach((devling) => {
-      if (!devling.sprite) return;
+      if (!devling.sprite || !devling.nameSound) return;
       this.load.atlas(devling.name, devling.sprite);
+      this.load.audio(`${devling.name}Sound`, devling.nameSound);
     });
   }
 
@@ -77,11 +80,16 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.backgroundMusic.play();
 
+    this.vsImage = this.add.image(centerX, centerY, "vsImage");
+    this.vsImage.setAlpha(0);
+
     this.usedStats = [];
     this.playerLives = 3;
     this.enemyLives = 3;
     this.isRoundActive = false;
     this.isFirstRound = true;
+
+    this.isFlipping = false;
 
     //==CHOSEN PLAYER & ENEMY DEVLING
     this.playerDevling = database[0];
@@ -155,6 +163,12 @@ export default class trumpBattle extends Phaser.Scene {
       .setOrigin(0.5)
       .setAlpha(0);
 
+    this.nameSounds = {
+      playerName: this.sound.add(`${this.playerDevling.name}Sound`),
+      vsSound: this.sound.add("vsSound"),
+      enemyName: this.sound.add(`${this.enemyDevling.name}Sound`),
+    };
+
     //
     //==STATS & NAV SETUP==
     this.statKeys = Object.keys(this.playerDevling).filter(
@@ -218,22 +232,66 @@ export default class trumpBattle extends Phaser.Scene {
       3: this.sound.add("finalRound"),
     };
 
-    this.startNextRound = () => {
-      const roundNumber = this.usedStats.length + 1;
-      const sound = this.roundSounds[roundNumber];
+    this.startNextRound();
+  }
 
-      if (sound) {
-        this.isRoundActive = true;
-        sound.play();
+  startNextRound() {
+    const roundNumber = this.usedStats.length + 1;
+    const roundSound = this.roundSounds[roundNumber];
 
-        this.time.delayedCall(sound.duration * 1000, () => {
-          this.flipEnemyCardToBack();
-          this.isRoundActive = false;
-        });
-      }
+    if (!roundSound) return;
+
+    this.isRoundActive = true;
+
+    const roundImageMap = {
+      1: "roundOneImg",
+      2: "roundTwoImg",
+      3: "finalRoundImg",
     };
 
-    this.startNextRound();
+    const imageKey = roundImageMap[roundNumber];
+
+    if (this.isFirstRound) {
+      this.isFirstRound = false;
+
+      const { playerName, vsSound, enemyName } = this.nameSounds;
+
+      playerName.play();
+
+      this.time.delayedCall(playerName.duration * 1000, () => {
+        this.vsImage.setAlpha(1);
+        vsSound.play();
+
+        this.tweens.add({
+          targets: this.vsImage,
+          scale: 1.5,
+          alpha: 0,
+          duration: 1000,
+          onComplete: () => this.vsImage.setAlpha(0),
+        });
+
+        this.time.delayedCall(vsSound.duration * 1000, () => {
+          enemyName.play();
+
+          this.time.delayedCall(enemyName.duration * 1000, () => {
+            this.showRoundTransition(imageKey, roundSound.key);
+            roundSound.play();
+
+            this.time.delayedCall(roundSound.duration * 1000, () => {
+              this.flipEnemyCardToBack();
+              this.isRoundActive = false;
+            });
+          });
+        });
+      });
+    } else {
+      this.showRoundTransition(imageKey, roundSound.key);
+      roundSound.play();
+
+      this.time.delayedCall(roundSound.duration * 1000, () => {
+        this.isRoundActive = false;
+      });
+    }
   }
 
   cardTextStyle() {
@@ -258,6 +316,37 @@ export default class trumpBattle extends Phaser.Scene {
       fontFamily: '"Press Start 2P"',
       fill: color,
     };
+  }
+
+  showRoundTransition(imageKey, soundKey) {
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+
+    const roundImg = this.add.image(centerX, centerY, imageKey).setAlpha(0);
+
+    // Play sound
+    this.sound.play(soundKey);
+
+    this.tweens.add({
+      targets: roundImg,
+      alpha: 1,
+      scale: 1.5,
+      duration: 500,
+      ease: "Power2",
+      delay: 500,
+      onComplete: () => {
+        this.time.delayedCall(1000, () => {
+          this.tweens.add({
+            targets: roundImg,
+            alpha: 0,
+            scale: 1,
+            duration: 500,
+            ease: "Power2",
+            onComplete: () => roundImg.destroy(),
+          });
+        });
+      },
+    });
   }
 
   navigateStat(dir) {
@@ -288,10 +377,15 @@ export default class trumpBattle extends Phaser.Scene {
       let result = "draw";
 
       if (player > enemy) {
+        this.playerHead.playAnimation("win");
+        this.enemyHead.playAnimation("lose");
         result = ` ${this.devlingName} win`;
 
         this.enemyLives--;
       } else if (player < enemy) {
+        this.playerHead.playAnimation("lose");
+        this.enemyHead.playAnimation("win");
+
         result = "Enemy win";
         this.playerLives--;
       }
@@ -313,9 +407,12 @@ export default class trumpBattle extends Phaser.Scene {
 
       this.updateHealthBars();
 
+      const playerDevlingWins = 3 - this.enemyLives;
+      const enemyDevlingWins = 3 - this.playerLives;
+
       const gameOver =
-        this.playerLives === 0 ||
-        this.enemyLives === 0 ||
+        playerDevlingWins === 2 ||
+        enemyDevlingWins === 2 ||
         this.usedStats.length >= 3;
 
       if (gameOver) {
@@ -337,7 +434,11 @@ export default class trumpBattle extends Phaser.Scene {
   }
 
   flipCard(stat, cb) {
+    if (this.isFlipping) return; // Prevent flipping if already in progress
+
+    this.isFlipping = true;
     this.enemyHead.setAlpha(0);
+
     this.tweens.add({
       targets: this.enemyCard,
       scaleX: 0,
@@ -359,7 +460,10 @@ export default class trumpBattle extends Phaser.Scene {
           targets: this.enemyCard,
           scaleX: 0.8,
           duration: 300,
-          onComplete: cb,
+          onComplete: () => {
+            this.isFlipping = false;
+            cb();
+          },
         });
       },
     });

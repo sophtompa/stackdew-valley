@@ -8,6 +8,7 @@ import ComputerScene from '../scenes/computerScene.js';
 import officeScene from '../scenes/officeScene.js';
 import battleScene from '../scenes/battleScene.js';
 import battleCardScene from '../scenes/battleCards.js';
+import titleScene from '../scenes/titleScene.js';
 import pauseScene from '../scenes/pauseScene.js';
 // import trumpBattle from "../scenes/trumpScene.js";
 
@@ -45,7 +46,9 @@ const config = {
 	},
 
 	scene: [
-		officeScene,
+
+		titleScene,
+    development
 		firstFloor,
 		farmScene,
 		preloadScene,

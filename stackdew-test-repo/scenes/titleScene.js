@@ -5,6 +5,15 @@ export default class TitleScene extends Phaser.Scene {
 		super('titleScene');
 	}
 
+	preload() {
+		// WebFont.load({
+		// 	google: {
+		// 		families: ['VT323', 'Press Start 2P', 'Silkscreen'],
+		// 	},
+		// 	active: () => {},
+		// });
+	}
+
 	create() {
 		const centerX = this.cameras.main.centerX;
 		const centerY = this.cameras.main.centerY;
@@ -84,7 +93,7 @@ export default class TitleScene extends Phaser.Scene {
 		});
 
 		this.add
-			.text(centerX, centerY + 20, '(click our names for GitHub links!)', {
+			.text(centerX, centerY + 20, '(click our names for GitHub links)', {
 				fontFamily: 'VT323',
 				fontSize: '14px',
 				fill: '#1f451c',

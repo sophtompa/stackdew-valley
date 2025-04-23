@@ -18,8 +18,6 @@ export class mainScene extends Phaser.Scene {
 	}
 }
 
-//blah
-
 const config = {
 	type: Phaser.AUTO,
 	width: 800,
@@ -46,14 +44,13 @@ const config = {
 	},
 
 	scene: [
-
 		titleScene,
-    development
 		firstFloor,
 		farmScene,
 		preloadScene,
 		overworldScene,
 		secondFloor,
+		officeScene,
 		ComputerScene,
 		battleScene,
 		battleCardScene,

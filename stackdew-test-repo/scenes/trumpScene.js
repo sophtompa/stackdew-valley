@@ -109,11 +109,13 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.enemyHead = new DevlingHead(
       this,
-      centerX / 1.6,
+      centerX + 200,
       centerY - 10,
-      this.playerDevling
-    );
-    this.playerHead.setScale(2);
+      this.enemyDevling
+    )
+      .setScale(2)
+      .setFlipX(true)
+      .setDepth(2);
 
     //NAME
     this.playerCardName = this.playerDevling.name;
@@ -323,7 +325,7 @@ export default class trumpBattle extends Phaser.Scene {
               ? `${this.devlingName} wins the match`
               : "Enemy devling wins the match"
           );
-          this.time.delayedCall(2000, () => this.moveScene('overworldScene'));
+          this.time.delayedCall(2000, () => this.moveScene("overworldScene"));
         });
       } else {
         this.time.delayedCall(4000, () => {
@@ -335,6 +337,7 @@ export default class trumpBattle extends Phaser.Scene {
   }
 
   flipCard(stat, cb) {
+    this.enemyHead.setAlpha(0);
     this.tweens.add({
       targets: this.enemyCard,
       scaleX: 0,
@@ -350,6 +353,8 @@ export default class trumpBattle extends Phaser.Scene {
           .setText(`${this.enemyDevling.stats[stat]}`)
           .setAlpha(1);
 
+        this.enemyHead.setAlpha(1);
+
         this.tweens.add({
           targets: this.enemyCard,
           scaleX: 0.8,
@@ -362,7 +367,12 @@ export default class trumpBattle extends Phaser.Scene {
 
   flipCardBack(cb) {
     this.tweens.add({
-      targets: [this.enemyCardStat, this.enemyCardName, this.questionMarks],
+      targets: [
+        this.enemyHead,
+        this.enemyCardStat,
+        this.enemyCardName,
+        this.questionMarks,
+      ],
       alpha: 0,
       duration: 200,
       ease: "Power1",
@@ -395,7 +405,12 @@ export default class trumpBattle extends Phaser.Scene {
 
   flipEnemyCardToBack() {
     this.tweens.add({
-      targets: [this.enemyCardStat, this.enemyCardName, this.questionMarks],
+      targets: [
+        this.enemyHead,
+        this.enemyCardStat,
+        this.enemyCardName,
+        this.questionMarks,
+      ],
       alpha: 0,
       duration: 200,
       ease: "Power1",
@@ -443,8 +458,8 @@ export default class trumpBattle extends Phaser.Scene {
     this.input.keyboard.enabled = false;
     this.cameras.main.fadeOut(1000, 0, 0, 0);
     this.time.delayedCall(1000, () => {
-        this.scene.start('overworldScene', { from: 'trumpScene' });
-        this.input.keyboard.enabled = true;
+      this.scene.start("overworldScene", { from: "trumpScene" });
+      this.input.keyboard.enabled = true;
     });
-}
+  }
 }

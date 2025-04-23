@@ -1,3 +1,5 @@
+
+
 import Phaser from 'phaser';
 import overworldScene from '../scenes/overworld.js';
 import preloadScene from '../scenes/preloadScene.js';
@@ -10,13 +12,17 @@ import battleScene from '../scenes/battleScene.js';
 import battleCardScene from '../scenes/battleCards.js';
 import titleScene from '../scenes/titleScene.js';
 import pauseScene from '../scenes/pauseScene.js';
-// import trumpBattle from "../scenes/trumpScene.js";
+import trumpBattle from "../scenes/trumpScene.js";
 import dungeonScene from "../scenes/dungeonScene.js";
 
+
+// import trumpBattle from "../scenes/trumpScene.js";
+
+
 export class mainScene extends Phaser.Scene {
-	constructor() {
-		super('mainScene');
-	}
+  constructor() {
+    super("mainScene");
+  }
 }
 
 WebFont.load({
@@ -27,6 +33,7 @@ WebFont.load({
 		startGame();
 	},
 });
+
 
 function startGame() {
 	const config = {
@@ -53,6 +60,7 @@ function startGame() {
 				debug: true,
 			},
 		},
+
 
 
 		scene: [

@@ -11,6 +11,7 @@ import officeScene from '../scenes/officeScene.js';
 import battleScene from '../scenes/battleScene.js';
 import battleCardScene from '../scenes/battleCards.js';
 import titleScene from '../scenes/titleScene.js';
+import loreScene from '../scenes/loreScene.js';
 import pauseScene from '../scenes/pauseScene.js';
 import trumpBattle from "../scenes/trumpScene.js";
 import dungeonScene from "../scenes/dungeonScene.js";
@@ -65,6 +66,7 @@ function startGame() {
 
 		scene: [
 			titleScene,
+			loreScene,
 			firstFloor,
 			farmScene,
 			preloadScene,

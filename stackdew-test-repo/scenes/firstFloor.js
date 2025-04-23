@@ -32,6 +32,7 @@ export default class FirstFloor extends Phaser.Scene {
 	}
 
 	create() {
+		this.sound.volume = 0.7;
 		//initialise dialogue manager
 		this.dialogue = new DialogueManager(this);
 
@@ -82,11 +83,6 @@ export default class FirstFloor extends Phaser.Scene {
 			this.time.delayedCall(700, () => {
 				this.dialogue.startDialogue(
 					[
-						{
-							text: `Welcome ... to StackDew Valley.`,
-							speaker: '',
-							color: '#1f451c',
-						},
 						{
 							text: `Tip: Use arrow keys to move and spacebar to interact.`,
 							speaker: '',

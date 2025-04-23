@@ -63,7 +63,10 @@ export default class loreScene extends Phaser.Scene {
 		);
 	}
 
-	update() {}
+	update() {
+		if (Phaser.Input.Keyboard.JustDown(this.spaceKey))
+			this.moveScene('firstFloor');
+	}
 
 	moveScene(target) {
 		this.input.keyboard.enabled = false;

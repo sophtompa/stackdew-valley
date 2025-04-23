@@ -156,6 +156,7 @@ export default class DialogueManager {
 		speaker = 'tutorial'
 	) {
 		const { add } = this.scene;
+		console.log('Creating dialogue panel:', lineText);
 
 		const panelPadding = 20;
 		const textPadding = 7;
@@ -294,7 +295,7 @@ export default class DialogueManager {
 		return wrappedText;
 	}
 
-	typeText(textObject, fullText, onComplete, speed = 50) {
+	typeText(textObject, fullText, onComplete, speed = 40) {
 		const speaker = this.lines[this.currentLine].speaker;
 		const soundKey =
 			{

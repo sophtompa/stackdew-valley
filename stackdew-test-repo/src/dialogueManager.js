@@ -92,7 +92,7 @@ export default class DialogueManager {
 			// If SHOUTING, add a tween to make the text jiggle
 			if (isShouting) {
 				//shouting volume is also louder
-				this.soundVolume = 0.3;
+				this.soundVolume = 0.2;
 				this.shoutTween = this.scene.tweens.add({
 					targets: textObj,
 					x: {
@@ -139,7 +139,7 @@ export default class DialogueManager {
 							if (this.currentLine < this.lines.length) {
 								this.showNextLine();
 							} else {
-								this.finishDialogue(); // Call only after ALL lines
+								this.finishDialogue();
 							}
 						},
 					});

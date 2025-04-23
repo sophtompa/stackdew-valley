@@ -87,7 +87,7 @@ export default class battleScene extends Phaser.Scene {
 
 	skipConversation() {
 		//skip to specified scene if user presses space (needs changing to actual battlescene)
-		this.moveScene();
+		this.moveScene('overworldScene');
 	}
 
 	moveScene() {
@@ -153,7 +153,7 @@ export default class battleScene extends Phaser.Scene {
 						() => {
 							this.cameras.main.pan(400, 224, 11000, 'Cubic.easeInOut', false, (camera, progress) => {
 								if(progress === 1) {
-									this.moveScene('trumpBattle');
+									this.moveSceneTrump('trumpBattle');
 								}
 							});
 							this.doFootSteps();
@@ -225,12 +225,21 @@ export default class battleScene extends Phaser.Scene {
 		});
 	}
 
-	moveScene(sceneKey) {
+	moveScene() {
 		this.sound.stopAll();
 		this.input.keyboard.enabled = false;
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
-			this.scene.start(sceneKey); 
+			this.scene.start('overworldScene', {from: 'battleScene'}); 
+		});
+	}
+
+	moveSceneTrump() {
+		this.sound.stopAll();
+		this.input.keyboard.enabled = false;
+		this.cameras.main.fadeOut(500, 0, 0, 0);
+		this.time.delayedCall(500, () => {
+			this.scene.start('trumpBattle', {from: 'battleScene'}); 
 		});
 	}
 	

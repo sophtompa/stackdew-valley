@@ -129,15 +129,6 @@ export default class trumpBattle extends Phaser.Scene {
     this.bossSprite.flipX = true;
     this.bossSprite.play("bossStanding");
 
-    // this.boss = database[6];
-    // this.bigBoss = new DevlingHead(
-    //   this,
-    //   centerX + 120,
-    //   centerY - 200,
-    //   this.boss
-    // )
-    //   .setScale(3)
-    //   .setFlipX(true);
     this.questionMarks = this.add
       .image(centerX + 209, centerY + 117, "QuestionMarks")
 
@@ -156,11 +147,11 @@ export default class trumpBattle extends Phaser.Scene {
     this.isFlipping = false;
 
     //==CHOSEN PLAYER & ENEMY DEVLING
-    this.playerDevling = database[5];
-    this.enemyDevling = enemyDevlings[0];
+    this.playerDevling = database[0];
+    this.enemyDevling = enemyDevlings[2];
 
     //
-    //==HEALTHBAR==
+    //==HEALTHBAR=
     this.playerHealthBar = this.createHealthBar(100, 50);
     this.enemyHealthBar = this.createHealthBar(cam.width - 100, 50);
     this.enemyHealthBar.flipX = true;

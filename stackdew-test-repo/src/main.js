@@ -58,7 +58,7 @@ function startGame() {
     },
 
     scene: [
-      // trumpBattle,
+      trumpBattle,
       // titleScene,
       // loreScene,
       firstFloor,

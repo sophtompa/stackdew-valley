@@ -63,7 +63,7 @@ export default class TitleScene extends Phaser.Scene {
 			{ label: 'Paul', url: 'https://github.com/testmango-sudo' },
 			{ label: 'Tymur', url: 'https://github.com/papaparadox' },
 			{ label: 'Chris', url: 'https://github.com/slightly76' },
-			{ label: 'Sophie,', url: 'https://github.com/sophtompa' },
+			{ label: 'Sophie', url: 'https://github.com/sophtompa' },
 			{ label: 'Dean', url: 'https://github.com/notyourimaginarycoder' },
 		];
 

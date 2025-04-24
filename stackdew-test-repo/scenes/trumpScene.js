@@ -1,6 +1,8 @@
 import { database } from "/src/dummydata.js";
 import { enemyDevlings } from "../src/enemyDevlingData";
 import DevlingHead from "../src/devlingHead";
+import Player from "../src/player";
+import DialogueManager from "../src/dialogueManager";
 
 export default class trumpBattle extends Phaser.Scene {
   constructor() {
@@ -19,8 +21,8 @@ export default class trumpBattle extends Phaser.Scene {
     // this.load.image("front", "../assets/cardFront.png");
 
     //enemy card images (back and front of card)
-    // this.load.image("enemyfront", "../assets/cardDesign/redCardFront.png");
-    this.load.image("enemyfront", "../assets/cardDesign/cardFront.png");
+    this.load.image("enemyfront", "../assets/cardDesign/redCardFront.png");
+    // this.load.image("enemyfront", "../assets/cardDesign/cardFront.png");
     this.load.image("enemyback", "../assets/cardDesign/redCardBack.png");
 
     //nav sounds
@@ -48,7 +50,22 @@ export default class trumpBattle extends Phaser.Scene {
     this.load.image("roundTwoImg", "../assets/roundTwoImg.png");
     this.load.image("finalRoundImg", "../assets/finalRoundImg.png");
 
-    this.load.image("QuestionMarks", "../assets/questionMarks.png");
+    this.load.image("QuestionMarks", "../assets/cardQuestionMarks.png");
+
+    this.load.spritesheet("playerSheet", "assets/rose.png", {
+      frameWidth: 32,
+      frameHeight: 65,
+    });
+
+    this.load.spritesheet("mitchSheet", "assets/mitchSprite.png", {
+      frameWidth: 32,
+      frameHeight: 65,
+    });
+
+    this.load.spritesheet("bossSheet", "assets/theboss.png", {
+      frameWidth: 32,
+      frameHeight: 65,
+    });
 
     database.forEach((devling) => {
       if (!devling.sprite || !devling.nameSound) return;
@@ -80,7 +97,54 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.backgroundMusic.play();
 
-    this.vsImage = this.add.image(centerX, centerY, "vsImage");
+    this.playerSprite = new Player(
+      this,
+      centerX - 300,
+      centerY + 40,
+      "playerSheet",
+      false
+    );
+    this.playerSprite.setScale(2);
+    this.playerSprite.play("standing");
+
+    this.mitchSprite = new Player(
+      this,
+      centerX + 350,
+      centerY + 40,
+      "mitchSheet",
+      false
+    );
+    this.mitchSprite.setScale(2);
+    this.mitchSprite.flipX = true;
+    this.mitchSprite.play("mitchStanding");
+
+    this.bossSprite = new Player(
+      this,
+      centerX + 20,
+      centerY - 190,
+      "bossSheet",
+      false
+    );
+    this.bossSprite.setScale(2);
+    this.bossSprite.flipX = true;
+    this.bossSprite.play("bossStanding");
+
+    // this.boss = database[6];
+    // this.bigBoss = new DevlingHead(
+    //   this,
+    //   centerX + 120,
+    //   centerY - 200,
+    //   this.boss
+    // )
+    //   .setScale(3)
+    //   .setFlipX(true);
+    this.questionMarks = this.add
+      .image(centerX + 209, centerY + 117, "QuestionMarks")
+
+      .setScale(0.6)
+      .setDepth(3);
+
+    this.vsImage = this.add.image(centerX + 30, centerY + 30, "vsImage");
     this.vsImage.setAlpha(0);
 
     this.usedStats = [];
@@ -92,7 +156,7 @@ export default class trumpBattle extends Phaser.Scene {
     this.isFlipping = false;
 
     //==CHOSEN PLAYER & ENEMY DEVLING
-    this.playerDevling = database[0];
+    this.playerDevling = database[5];
     this.enemyDevling = enemyDevlings[0];
 
     //
@@ -101,29 +165,35 @@ export default class trumpBattle extends Phaser.Scene {
     this.enemyHealthBar = this.createHealthBar(cam.width - 100, 50);
     this.enemyHealthBar.flipX = true;
 
+    this.playerHealthBar.originalX = this.playerHealthBar.x;
+    this.playerHealthBar.originalY = this.playerHealthBar.y;
+
+    this.enemyHealthBar.originalX = this.enemyHealthBar.x;
+    this.enemyHealthBar.originalY = this.enemyHealthBar.y;
+
     //VERTICAL DISTANCE FOR PLAYER CARD
     let statY = centerY + 73;
 
     //==PLAYER DEVLING CARD==
-    this.add.image(centerX - 150, centerY + 50, "front").setScale(0.9);
+    this.add.image(centerX - 160, centerY + 50, "front").setScale(0.9);
 
     this.playerHead = new DevlingHead(
       this,
-      centerX / 1.6,
-      centerY - 10,
+      centerX - 155,
+      centerY - 6,
       this.playerDevling
     );
     this.playerHead.setScale(2);
 
     this.enemyHead = new DevlingHead(
       this,
-      centerX + 200,
-      centerY - 10,
+      centerX + 205,
+      centerY - 6,
       this.enemyDevling
     )
       .setScale(2)
       .setFlipX(true)
-      .setDepth(2);
+      .setDepth(1);
 
     //NAME
     this.playerCardName = this.playerDevling.name;
@@ -132,7 +202,7 @@ export default class trumpBattle extends Phaser.Scene {
     //NAME TEXT
     this.playerCardName = this.add
       .text(
-        centerX - 150,
+        centerX - 158,
         centerY + 55,
         this.playerDevling.name.toUpperCase(),
         this.cardTextStyle()
@@ -142,7 +212,7 @@ export default class trumpBattle extends Phaser.Scene {
     //
     //==ENEMY DEVLING CARD==
     this.enemyCard = this.add
-      .image(centerX + 200, centerY + 50, "enemyfront")
+      .image(centerX + 210, centerY + 50, "enemyfront")
       .setScale(0.9)
       .setOrigin(0.5);
 
@@ -150,7 +220,7 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.enemyCardName = this.add
       .text(
-        centerX + 200,
+        centerX + 210,
         centerY + 55,
         this.enemyDevling.name.toUpperCase(),
         this.cardTextStyle()
@@ -159,7 +229,7 @@ export default class trumpBattle extends Phaser.Scene {
 
     //ENEMY STAT TEXT
     this.enemyCardStat = this.add
-      .text(centerX + 200, centerY + 100, "", this.cardStatStyle())
+      .text(centerX + 210, centerY + 100, "", this.cardStatStyle())
       .setOrigin(0.5)
       .setAlpha(0);
 
@@ -180,7 +250,7 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.statKeys.forEach((stat, i) => {
       //NAME COLUMN
-      const nameText = this.add.text(centerX / 2.3, statY, stat.toUpperCase(), {
+      const nameText = this.add.text(centerX / 2.4, statY, stat.toUpperCase(), {
         fontSize: "10px",
         fontFamily: '"Press Start 2P"',
         fill: i === this.currentStatIndex ? "green" : "black",
@@ -188,7 +258,7 @@ export default class trumpBattle extends Phaser.Scene {
 
       //LVL COLUMN
       const lvlText = this.add.text(
-        centerX - 142,
+        centerX - 152,
         statY,
         `   LVL${this.playerDevling[stat]}`,
         {
@@ -257,6 +327,7 @@ export default class trumpBattle extends Phaser.Scene {
       const { playerName, vsSound, enemyName } = this.nameSounds;
 
       playerName.play();
+      this.playerHead.playAnimation("win");
 
       this.time.delayedCall(playerName.duration * 1000, () => {
         this.vsImage.setAlpha(1);
@@ -272,9 +343,11 @@ export default class trumpBattle extends Phaser.Scene {
 
         this.time.delayedCall(vsSound.duration * 1000, () => {
           enemyName.play();
+          this.enemyHead.playAnimation("win");
 
           this.time.delayedCall(enemyName.duration * 1000, () => {
             this.showRoundTransition(imageKey, roundSound.key);
+
             roundSound.play();
 
             this.time.delayedCall(roundSound.duration * 1000, () => {
@@ -287,6 +360,10 @@ export default class trumpBattle extends Phaser.Scene {
     } else {
       this.showRoundTransition(imageKey, roundSound.key);
       roundSound.play();
+      // this.roundImages = this.add
+      //   .image(centerY + 15, imageKey)
+      //   .setScale(0.9)
+      //   .setOrigin(0.5);
 
       this.time.delayedCall(roundSound.duration * 1000, () => {
         this.isRoundActive = false;
@@ -296,7 +373,7 @@ export default class trumpBattle extends Phaser.Scene {
 
   cardTextStyle() {
     return {
-      fontSize: "12px",
+      fontSize: "15px",
       fontFamily: '"Press Start 2P"',
       fill: "black",
     };
@@ -312,7 +389,7 @@ export default class trumpBattle extends Phaser.Scene {
 
   statTextStyle(color) {
     return {
-      fontSize: "10px",
+      fontSize: "60px",
       fontFamily: '"Press Start 2P"',
       fill: color,
     };
@@ -322,7 +399,10 @@ export default class trumpBattle extends Phaser.Scene {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
 
-    const roundImg = this.add.image(centerX, centerY, imageKey).setAlpha(0);
+    const roundImg = this.add
+      .image(centerX, centerY + 10, imageKey)
+      .setAlpha(0)
+      .setDepth(2);
 
     // Play sound
     this.sound.play(soundKey);
@@ -379,15 +459,21 @@ export default class trumpBattle extends Phaser.Scene {
       if (player > enemy) {
         this.playerHead.playAnimation("win");
         this.enemyHead.playAnimation("lose");
+        // this.bigBoss.playAnimation("talk");
+
         result = ` ${this.devlingName} win`;
 
         this.enemyLives--;
+        this.shakeHealthBar(this.enemyHealthBar);
       } else if (player < enemy) {
         this.playerHead.playAnimation("lose");
         this.enemyHead.playAnimation("win");
+        // this.bigBoss.playAnimation("talk");
 
         result = "Enemy win";
         this.playerLives--;
+        this.shakeHealthBar(this.playerHealthBar);
+        this.cameras.main.shake(100, 0.005);
       }
 
       const usedText = this.statTextList[this.currentStatIndex];
@@ -419,8 +505,8 @@ export default class trumpBattle extends Phaser.Scene {
         this.time.delayedCall(2000, () => {
           resultText.setText(
             this.playerLives > this.enemyLives
-              ? `${this.devlingName} wins the match`
-              : "Enemy devling wins the match"
+              ? `Your devling has been hired.`
+              : `Mitch's devling has been hired`
           );
           this.time.delayedCall(2000, () => this.moveScene("overworldScene"));
         });
@@ -433,9 +519,22 @@ export default class trumpBattle extends Phaser.Scene {
     });
   }
 
-  flipCard(stat, cb) {
-    if (this.isFlipping) return; // Prevent flipping if already in progress
+  shakeHealthBar(bar) {
+    this.tweens.add({
+      targets: bar,
+      x: bar.x + Phaser.Math.Between(-5, 5),
+      y: bar.y + Phaser.Math.Between(-5, 5),
+      duration: 50,
+      yoyo: true,
+      repeat: 4,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        bar.setPosition(bar.originalX, bar.originalY);
+      },
+    });
+  }
 
+  flipCard(stat, cb) {
     this.isFlipping = true;
     this.enemyHead.setAlpha(0);
 
@@ -458,7 +557,7 @@ export default class trumpBattle extends Phaser.Scene {
 
         this.tweens.add({
           targets: this.enemyCard,
-          scaleX: 0.8,
+          scaleX: 0.9,
           duration: 300,
           onComplete: () => {
             this.isFlipping = false;
@@ -493,7 +592,7 @@ export default class trumpBattle extends Phaser.Scene {
 
         this.tweens.add({
           targets: this.enemyCard,
-          scaleX: 0.8,
+          scaleX: 0.9,
           duration: 300,
           ease: "Power2",
           onComplete: () => {
@@ -530,7 +629,7 @@ export default class trumpBattle extends Phaser.Scene {
 
         this.tweens.add({
           targets: this.enemyCard,
-          scaleX: 0.8,
+          scaleX: 0.9,
           duration: 300,
           ease: "Power2",
         });
@@ -542,7 +641,7 @@ export default class trumpBattle extends Phaser.Scene {
     const healthBarSprite = this.add
       .image(x, y, "healthFull")
       .setOrigin(0.5)
-      .setScale(0.5);
+      .setScale(0.6);
     return healthBarSprite;
   }
 

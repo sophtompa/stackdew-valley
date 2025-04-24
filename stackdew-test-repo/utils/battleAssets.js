@@ -12,7 +12,7 @@ export function preloadBattleAssets(scene, database, enemyDatabase) {
     scene.load.image("roundOneImg", "../assets/roundOneImg.png");
     scene.load.audio("roundTwo", "../assets/sounds/roundtwo.mp3");
     scene.load.audio("finalRound", "../assets/sounds/finalRound.mp3");
-  [16:01]
+
   //card images
     scene.load.image("playerCard", "../assets/dummyCard.png");
     scene.load.image("enemyCard", "../assets/cardDesign.png");

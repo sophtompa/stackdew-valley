@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import dialogueManager from '../src/dialogueManager.js';
 import togglePause from '../src/togglePause.js';
+//import trumpBattle from '../scene/trumpScene.js';
 
 export default class battleScene extends Phaser.Scene {
 	constructor() {
@@ -87,7 +88,7 @@ export default class battleScene extends Phaser.Scene {
 
 	skipConversation() {
 		//skip to specified scene if user presses space (needs changing to actual battlescene)
-		this.moveScene('overworldScene');
+		this.moveScene('trumpBattle');
 	}
 
 	moveScene() {
@@ -96,11 +97,10 @@ export default class battleScene extends Phaser.Scene {
 		this.input.keyboard.enabled = false;
 		this.cameras.main.fadeOut(1000, 0, 0, 0);
 		this.time.delayedCall(1000, () => {
-		this.scene.start('overworldScene', {from: 'battleScene'});
-		this.input.keyboard.enabled = true;
+			this.scene.start('trumpScene', { from: 'battleScene' });
+			this.input.keyboard.enabled = true;
 		});
 	}
-
 
 	update() {
 		// pause toggle
@@ -151,11 +151,18 @@ export default class battleScene extends Phaser.Scene {
 							},
 						],
 						() => {
-							this.cameras.main.pan(400, 224, 11000, 'Cubic.easeInOut', false, (camera, progress) => {
-								if(progress === 1) {
-									this.moveSceneTrump('trumpBattle');
+							this.cameras.main.pan(
+								400,
+								224,
+								11000,
+								'Cubic.easeInOut',
+								false,
+								(camera, progress) => {
+									if (progress === 1) {
+										this.moveSceneTrump('trumpBattle');
+									}
 								}
-							});
+							);
 							this.doFootSteps();
 						},
 						50,
@@ -230,7 +237,7 @@ export default class battleScene extends Phaser.Scene {
 		this.input.keyboard.enabled = false;
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
-			this.scene.start('overworldScene', {from: 'battleScene'}); 
+			this.scene.start('trumpBattle', { from: 'battleScene' });
 		});
 	}
 
@@ -239,8 +246,7 @@ export default class battleScene extends Phaser.Scene {
 		this.input.keyboard.enabled = false;
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
-			this.scene.start('trumpBattle', {from: 'battleScene'}); 
+			this.scene.start('trumpBattle', { from: 'battleScene' });
 		});
 	}
-	
 }

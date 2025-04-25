@@ -8,7 +8,7 @@ export const database = [
     commits: 2,
     debugging: 3,
     Resilience: 5,
-    sprite: "../assets/heads/james.png",
+    sprite: "../assets/battleHeads/James.png",
     nameSound: "../assets/sounds/james.mp3",
     isPlanted: false,
     isWatered: false,
@@ -23,7 +23,7 @@ export const database = [
     commits: 4,
     debugging: 1,
     Resilience: 1,
-    sprite: "../assets/heads/claire.png",
+    sprite: "../assets/battleHeads/Claire.png",
     nameSound: "../assets/sounds/kai.mp3",
     isPlanted: false,
     isWatered: false,
@@ -37,7 +37,8 @@ export const database = [
     commits: 0,
     debugging: 4,
     Resilience: 0,
-    sprite: "../assets/heads/evie.png",
+    sprite: "../assets/battleHeads/Evie.png",
+
     nameSound: "../assets/sounds/james.mp3",
 
     isPlanted: false,
@@ -52,7 +53,9 @@ export const database = [
     commits: 3,
     debugging: 0,
     Resilience: 3,
-    sprite: "../assets/heads/noah.png",
+
+    sprite: "../assets/battleHeads/Noah.png",
+
     nameSound: "../assets/sounds/james.mp3",
 
     isPlanted: false,
@@ -67,7 +70,9 @@ export const database = [
     commits: 4,
     debugging: 5,
     Resilience: 2,
-    sprite: "../assets/heads/penny.png",
+
+    sprite: "../assets/battleHeads/Penny.png",
+
     nameSound: "../assets/sounds/james.mp3",
 
     isPlanted: false,
@@ -82,7 +87,9 @@ export const database = [
     commits: 4,
     debugging: 5,
     Resilience: 4,
-    sprite: "../assets/heads/steve.png",
+
+    sprite: "../assets/battleHeads/steve.png",
+
     nameSound: "../assets/sounds/steve.mp3",
     isPlanted: false,
     isWatered: false,

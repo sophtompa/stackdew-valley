@@ -127,7 +127,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   update() {
     //player movement speed
-    const speed = 125;
+    const speed = 300;
 
     //stop player moving if not being told to move
     this.body.setVelocity(0);

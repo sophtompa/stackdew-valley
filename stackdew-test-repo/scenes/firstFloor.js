@@ -20,6 +20,16 @@ export default class FirstFloor extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 65,
     });
+
+    this.load.spritesheet("mitchSheet", "assets/mitchSprite.png", {
+      frameWidth: 32,
+      frameHeight: 65,
+    });
+
+    this.load.spritesheet("bossSheet", "assets/theboss.png", {
+      frameWidth: 32,
+      frameHeight: 65,
+    });
     database.forEach((devling) => {
       this.load.spritesheet(devling.name, devling.sprite, {
         frameWidth: 64,

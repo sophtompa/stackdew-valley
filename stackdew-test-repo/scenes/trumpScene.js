@@ -1,4 +1,3 @@
-
 import { database } from "/src/dummydata.js";
 import { enemyDevlings } from "../src/enemyDevlingData";
 import DevlingHead from "../src/devlingHead";
@@ -12,7 +11,7 @@ export default class TrumpBattle extends Phaser.Scene {
 
   preload() {
     //background image
-    this.load.image('background', '../assets/battlewithapproach.png');
+    this.load.image("background", "../assets/battlewithapproach.png");
 
     this.load.image("playerCard", "../assets/cardDesign/cardFront.png");
     // this.load.image("enemyCard", "../assets/cardDesign.png");
@@ -71,17 +70,17 @@ export default class TrumpBattle extends Phaser.Scene {
     //initialise dialogue manager
     this.dialogue = new DialogueManager(this);
     this.isDialogueRunning = false;
-    
+
     this.anims.create({
-			key: 'flame',
-			frames: this.anims.generateFrameNumbers('fire', { start: 0, end: 5 }),
-			frameRate: 10,
-			repeat: -1,
-		});
-		const flame1 = this.add.sprite(47, 329, 'fire');
-		const flame2 = this.add.sprite(750, 41, 'fire');
-		flame1.play('flame').setScale(2.5).setFrame(3);
-		flame2.play('flame').setScale(2.5);
+      key: "flame",
+      frames: this.anims.generateFrameNumbers("fire", { start: 0, end: 5 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+    const flame1 = this.add.sprite(47, 329, "fire");
+    const flame2 = this.add.sprite(750, 41, "fire");
+    flame1.play("flame").setScale(2.5).setFrame(3);
+    flame2.play("flame").setScale(2.5);
 
     const cam = this.cameras.main;
     const centerX = cam.centerX;
@@ -100,41 +99,43 @@ export default class TrumpBattle extends Phaser.Scene {
 
     this.backgroundMusic.play();
 
-    		this.playerSprite = new Player(
-			this,
-			centerX - 20,
-			centerY - 10,
-			'playerSheet',
-			false
-		);
-		//this.playerSprite.setScale(2);
+    this.playerSprite = new Player(
+      this,
+      centerX - 20,
+      centerY - 10,
+      "playerSheet",
+      false
+    );
+    //this.playerSprite.setScale(2);
 
-		this.playerSprite.anims.play('standing');
-		this.playerSprite.anims.setCurrentFrame(
-			this.playerSprite.anims.currentAnim.frames[2]
-		);
+    this.add.image(0, 0, "background").setOrigin(0).setDepth(-1);
 
-		this.mitchSprite = new Player(
-			this,
-			centerX + 80,
-			centerY - 10,
-			'mitchSheet',
-			false
-		);
-		//this.mitchSprite.setScale(2);
-		this.mitchSprite.flipX = true;
-		this.mitchSprite.anims.play('mitchStanding');
-		this.mitchSprite.anims.setCurrentFrame(
-			this.mitchSprite.anims.currentAnim.frames[3]
-		);
+    this.playerSprite.anims.play("standing");
+    this.playerSprite.anims.setCurrentFrame(
+      this.playerSprite.anims.currentAnim.frames[2]
+    );
 
-		this.bossSprite = new Player(
-			this,
-			centerX + 30,
-			centerY - 200,
-			'bossSheet',
-			false
-		);
+    this.mitchSprite = new Player(
+      this,
+      centerX + 80,
+      centerY - 10,
+      "mitchSheet",
+      false
+    );
+    //this.mitchSprite.setScale(2);
+    this.mitchSprite.flipX = true;
+    this.mitchSprite.anims.play("mitchStanding");
+    this.mitchSprite.anims.setCurrentFrame(
+      this.mitchSprite.anims.currentAnim.frames[3]
+    );
+
+    this.bossSprite = new Player(
+      this,
+      centerX + 30,
+      centerY - 200,
+      "bossSheet",
+      false
+    );
     //this.bossSprite.setScale(2);
     this.bossSprite.flipX = true;
 
@@ -783,5 +784,4 @@ export default class TrumpBattle extends Phaser.Scene {
       this.input.keyboard.enabled = true;
     });
   }
-
 }

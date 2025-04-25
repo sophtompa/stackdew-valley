@@ -4,7 +4,7 @@ import DevlingHead from "../src/devlingHead";
 import Player from "../src/player";
 import DialogueManager from "../src/dialogueManager";
 
-export default class trumpBattle extends Phaser.Scene {
+export default class TrumpBattle extends Phaser.Scene {
   constructor() {
     super("trumpBattle");
   }
@@ -53,21 +53,6 @@ export default class trumpBattle extends Phaser.Scene {
 
     this.load.audio("speechSound", "../assets/speechSound.wav");
 
-    this.load.spritesheet("playerSheet", "assets/rose.png", {
-      frameWidth: 32,
-      frameHeight: 65,
-    });
-
-    this.load.spritesheet("mitchSheet", "assets/mitchSprite.png", {
-      frameWidth: 32,
-      frameHeight: 65,
-    });
-
-    this.load.spritesheet("bossSheet", "assets/theboss.png", {
-      frameWidth: 32,
-      frameHeight: 65,
-    });
-
     database.forEach((devling) => {
       if (!devling.sprite || !devling.nameSound) return;
       this.load.audio(`${devling.name}Sound`, devling.nameSound);
@@ -101,56 +86,53 @@ export default class trumpBattle extends Phaser.Scene {
       volume: 0.2,
     });
 
-    // // this.backgroundMusic.play();
+    this.backgroundMusic.play();
 
-    // this.playerSprite = new Player(
-    //   this,
-    //   centerX - 300,
-    //   centerY + 40,
-    //   "playerSheet",
-    //   false
-    // );
-    // //this.playerSprite.setScale(2);
+    this.playerSprite = new Player(
+      this,
+      centerX - 300,
+      centerY + 40,
+      "roseSheet",
+      false
+    );
+    //this.playerSprite.setScale(2);
 
-    // this.playerSprite.anims.play("standing");
-    // this.playerSprite.anims.setCurrentFrame(
-    //   this.playerSprite.anims.currentAnim.frames[2]
-    // );
+    this.playerSprite.anims.play("standing");
+    this.playerSprite.anims.setCurrentFrame(
+      this.playerSprite.anims.currentAnim.frames[2]
+    );
 
-    // this.mitchSprite = new Player(
-    //   this,
-    //   centerX + 350,
-    //   centerY + 40,
-    //   "mitchSheet",
-    //   false
-    // );
-    // //this.mitchSprite.setScale(2);
-    // this.mitchSprite.flipX = true;
-    // this.mitchSprite.anims.play("mitchStanding");
-    // this.mitchSprite.anims.setCurrentFrame(
-    //   this.mitchSprite.anims.currentAnim.frames[3]
-    // );
+    this.mitchSprite = new Player(
+      this,
+      centerX + 350,
+      centerY + 40,
+      "mitchSheet",
+      false
+    );
+    //this.mitchSprite.setScale(2);
+    this.mitchSprite.flipX = true;
+    this.mitchSprite.anims.play("mitchStanding");
+    this.mitchSprite.anims.setCurrentFrame(
+      this.mitchSprite.anims.currentAnim.frames[3]
+    );
 
-    // this.bossSprite = new Player(
-    //   this,
-    //   centerX + 20,
-    //   centerY - 190,
-    //   "bossSheet",
-    //   false
-    // );
-    // //this.bossSprite.setScale(2);
-    // this.bossSprite.flipX = true;
+    this.bossSprite = new Player(
+      this,
+      centerX + 20,
+      centerY - 190,
+      "bossSheet",
+      false
+    );
+    //this.bossSprite.setScale(2);
+    this.bossSprite.flipX = true;
 
-    // this.bossSprite.play("bossStanding");
+    this.bossSprite.play("bossStanding");
 
     this.questionMarks = this.add
       .image(centerX + 209, centerY + 117, "QuestionMarks")
 
       .setScale(0.6)
       .setDepth(3);
-
-    console.log(this.textures.exists("Becca")); // should be true
-    console.log(this.anims.exists("becca-idle")); // should also be true
 
     this.vsImage = this.add.image(centerX + 30, centerY + 30, "vsImage");
     this.vsImage.setAlpha(0);
@@ -768,17 +750,17 @@ export default class trumpBattle extends Phaser.Scene {
     this.enemyHealthBar.setTexture(getHeathBarSprite(this.enemyLives));
   }
 
-  transitionToNextScene() {
-    // Clear any existing objects and reload the spritesheets
-    this.scene.start("newScene"); // or use other transition logic
+  // transitionToNextScene() {
+  //   // Clear any existing objects and reload the spritesheets
+  //   this.scene.start("newScene"); // or use other transition logic
 
-    // Force reloading the sprite and animation by recreating them
-    this.scene.events.once("shutdown", () => {
-      // Clear the sprite or animation if necessary
-      this.playerHead.destroy();
-      this.enemyHead.destroy();
-    });
-  }
+  //   // Force reloading the sprite and animation by recreating them
+  //   this.scene.events.once("shutdown", () => {
+  //     // Clear the sprite or animation if necessary
+  //     this.playerHead.destroy();
+  //     this.enemyHead.destroy();
+  //   });
+  // }
 
   moveScene() {
     this.sound.stopAll();

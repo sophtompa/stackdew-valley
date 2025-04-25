@@ -9,7 +9,8 @@ export const enemyDevlings = [
       debugging: 3,
       Resilience: 5,
     },
-    sprite: "../assets/heads/zom.png",
+
+    sprite: "../assets/battleHeads/Noah.png",
     nameSound: "../assets/sounds/norbion.mp3",
   },
   {
@@ -22,7 +23,9 @@ export const enemyDevlings = [
       debugging: 4,
       Resilience: 2,
     },
-    sprite: "../assets/heads/flyor.png",
+
+    sprite: "../assets/battleHeads/Flyor.png",
+
     nameSound: "../assets/sounds/norbion.mp3",
   },
   {
@@ -35,7 +38,26 @@ export const enemyDevlings = [
       debugging: 0,
       Resilience: 3,
     },
-    sprite: "../assets/heads/beccaa.png",
+
+    sprite: "../assets/battleHeads/soph.png",
+
+    nameSound: "../assets/sounds/beccaSound.mp3",
+    isPlanted: false,
+    isWatered: false,
+    isGrown: false,
+  },
+  {
+    name: "Zeke",
+    stats: {
+      frontend: 5,
+      backend: 1,
+      "dev ego": 4,
+      commits: 3,
+      debugging: 0,
+      Resilience: 3,
+    },
+    sprite: "../assets/battleHeads/Zeke.png",
+
     nameSound: "../assets/sounds/beccaSound.mp3",
     isPlanted: false,
     isWatered: false,

@@ -58,6 +58,7 @@ function startGame() {
 		},
 
 		scene: [
+			trumpBattle,
 			titleScene,
 			loreScene,
 			firstFloor,
@@ -65,7 +66,6 @@ function startGame() {
 			preloadScene,
 			overworldScene,
 			secondFloor,
-			trumpBattle,
 			officeScene,
 			ComputerScene,
 			battleScene,

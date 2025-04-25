@@ -57,6 +57,7 @@ function startGame() {
       },
     },
 
+
     scene: [
       titleScene,
       loreScene,
@@ -65,7 +66,6 @@ function startGame() {
       preloadScene,
       overworldScene,
       secondFloor,
-
       officeScene,
       ComputerScene,
       battleScene,

@@ -11,7 +11,7 @@ export default class trumpBattle extends Phaser.Scene {
 
 	preload() {
 		//background image
-		this.load.image('background', '../assets/battleroof.png');
+		this.load.image('background', '../assets/battlewithapproach.png');
 
 		this.load.image('playerCard', '../assets/cardDesign/cardFront.png');
 		// this.load.image("enemyCard", "../assets/cardDesign.png");
@@ -69,6 +69,12 @@ export default class trumpBattle extends Phaser.Scene {
 			frameHeight: 65,
 		});
 
+		//animated fire sprite for rooftop barrels
+		this.load.spritesheet('fire', '../assets/burning_loop_3.png', {
+			frameWidth: 15,
+			frameHeight: 24,
+		});
+
 		database.forEach((devling) => {
 			if (!devling.sprite || !devling.nameSound) return;
 			this.load.audio(`${devling.name}Sound`, devling.nameSound);
@@ -86,15 +92,23 @@ export default class trumpBattle extends Phaser.Scene {
 		this.dialogue = new DialogueManager(this);
 		this.isDialogueRunning = false;
 
+		this.anims.create({
+			key: 'flame',
+			frames: this.anims.generateFrameNumbers('fire', { start: 0, end: 5 }),
+			frameRate: 10,
+			repeat: -1,
+		});
+		const flame1 = this.add.sprite(47, 329, 'fire');
+		const flame2 = this.add.sprite(750, 41, 'fire');
+		flame1.play('flame').setScale(2.5).setFrame(3);
+		flame2.play('flame').setScale(2.5);
+
 		const cam = this.cameras.main;
 		const centerX = cam.centerX;
 		const centerY = cam.centerY;
 
-		this.add
-			.image(0, 0, 'background')
-			.setOrigin(0)
-			.setDepth(-1)
-			.setDisplaySize(cam.width, cam.height);
+		this.add.image(0, 0, 'background').setOrigin(0).setDepth(-1);
+		//.setDisplaySize(cam.width, cam.height);
 
 		this.backgroundMusic = this.sound.add('backgroundMusic', {
 			loop: true,
@@ -105,8 +119,8 @@ export default class trumpBattle extends Phaser.Scene {
 
 		this.playerSprite = new Player(
 			this,
-			centerX - 300,
-			centerY + 40,
+			centerX - 20,
+			centerY - 10,
 			'playerSheet',
 			false
 		);
@@ -119,8 +133,8 @@ export default class trumpBattle extends Phaser.Scene {
 
 		this.mitchSprite = new Player(
 			this,
-			centerX + 350,
-			centerY + 40,
+			centerX + 80,
+			centerY - 10,
 			'mitchSheet',
 			false
 		);
@@ -133,8 +147,8 @@ export default class trumpBattle extends Phaser.Scene {
 
 		this.bossSprite = new Player(
 			this,
-			centerX + 20,
-			centerY - 190,
+			centerX + 30,
+			centerY - 200,
 			'bossSheet',
 			false
 		);

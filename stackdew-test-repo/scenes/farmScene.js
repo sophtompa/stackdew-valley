@@ -276,13 +276,24 @@ export default class farmScene extends Phaser.Scene {
 			!this.isDialogueRunning
 		) {
 			const unplanted = userInventory.find(
-				(devling) => !devling.isPlanted && !devling.isGrown
+				(devling) =>
+					!devling.isPlanted &&
+					!devling.isGrown &&
+					devling.belongsTo === this.registry.get('playerName')
 			);
 			const unwatered = userInventory.find(
-				(devling) => devling.isPlanted && !devling.isWatered && !devling.isGrown
+				(devling) =>
+					devling.isPlanted &&
+					!devling.isWatered &&
+					!devling.isGrown &&
+					devling.belongsTo === this.registry.get('playerName')
 			);
 			const harvestableIndex = userInventory.findIndex(
-				(devling) => devling.isPlanted && devling.isWatered && !devling.isGrown
+				(devling) =>
+					devling.isPlanted &&
+					devling.isWatered &&
+					!devling.isGrown &&
+					devling.belongsTo === this.registry.get('playerName')
 			);
 
 			if (unplanted) {

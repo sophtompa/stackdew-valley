@@ -199,6 +199,18 @@ export default class FirstFloor extends Phaser.Scene {
 			togglePause(this);
 		}
 
+		//temporary test thing to remove devlings from oplayer ownership
+		if (Phaser.Input.Keyboard.JustDown(this.xKey)) {
+			console.log('x');
+			for (let i = 0; i < userInventory.length; i++) {
+				if (userInventory[i].belongsTo) {
+					userInventory[i].belongsTo = null;
+					console.log(userInventory[i].name, 'removed');
+					this.renderInventory.render(userInventory);
+				}
+			}
+		}
+
 		const bounds = new Phaser.Geom.Rectangle(
 			this.player.x - this.player.width / 2,
 			this.player.y - this.player.height / 2,
@@ -282,7 +294,7 @@ export default class FirstFloor extends Phaser.Scene {
 	}
 
 	spawnEmail() {
-		if (userInventory.length > 0) return;
+		if (userInventory.length >= 6) return;
 		this.registry.set('gotMail', true);
 		this.emailIcon.setVisible();
 		this.floatingMail.setVisible(true);

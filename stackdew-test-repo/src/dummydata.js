@@ -101,6 +101,23 @@ export const database = [
 		isGrown: false,
 		belongsTo: null,
 	},
+	{
+		name: 'AIDS',
+		frontend: 2,
+		backend: 4,
+		'dev ego': 3,
+		commits: 4,
+		debugging: 5,
+		Resilience: 4,
+
+		sprite: '../assets/battleHeads/steve.png',
+
+		nameSound: '../assets/sounds/steve.mp3',
+		isPlanted: false,
+		isWatered: false,
+		isGrown: false,
+		belongsTo: null,
+	},
 ];
 
 export let userInventory = [];

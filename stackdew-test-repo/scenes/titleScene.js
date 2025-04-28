@@ -8,6 +8,12 @@ export default class TitleScene extends Phaser.Scene {
 	preload() {}
 
 	create() {
+		//assign dummy player name
+		this.registry.set('playerName', 'DummyPlayer');
+
+		//create global gotMail flag
+		this.registry.set('gotMail', false);
+
 		this.cameras.main.setBackgroundColor('#000000');
 		this.cameras.main.fadeOut(0);
 

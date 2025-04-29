@@ -148,15 +148,6 @@ export default class DevlingSelection extends Phaser.Scene {
       this.playerDevling
     ).setScale(2);
 
-    this.playerCardName = this.add
-      .text(
-        centerX - 158,
-        centerY + 55,
-        this.playerDevling,
-        this.cardTextStyle()
-      )
-      .setOrigin(0.5);
-
     this.playerHealthBar = this.createHealthBar(100, 50);
     this.enemyHealthBar = this.createHealthBar(cam.width - 100, 50);
     this.enemyHealthBar.flipX = true;
@@ -230,7 +221,10 @@ export default class DevlingSelection extends Phaser.Scene {
     //
     //==STATS & NAV SETUP==
     this.statKeys = Object.keys(this.playerDevling).filter(
-      (objKey) => typeof this.playerDevling[objKey] === "number"
+      (objKey) =>
+        typeof this.playerDevling[objKey] === "number" &&
+        objKey !== "plantX" &&
+        objKey !== "plantY"
     );
 
     this.statTextList = [];

@@ -155,6 +155,10 @@ export default class TrumpBattle extends Phaser.Scene {
 
     //==CHOSEN PLAYER & ENEMY DEVLING
     this.enemyDevling = enemyDevlings[2];
+    // this.playerDevling = database.find(
+    //   (devling) => devling.name === this.playerDevling.name
+    // );
+    console.log(this.playerDevling);
 
     //
     //==HEALTHBAR=
@@ -238,9 +242,15 @@ export default class TrumpBattle extends Phaser.Scene {
 
     //
     //==STATS & NAV SETUP==
+
     this.statKeys = Object.keys(this.playerDevling).filter(
-      (objKey) => typeof this.playerDevling[objKey] === "number"
+      (objKey) =>
+        typeof this.playerDevling[objKey] === "number" &&
+        objKey !== "plantX" &&
+        objKey !== "plantY"
     );
+
+    // this.statKeys = Object.keys(this.playerDevling.stats);
 
     this.statTextList = [];
     this.currentStatIndex = 0;

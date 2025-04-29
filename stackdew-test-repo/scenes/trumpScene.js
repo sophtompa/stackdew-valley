@@ -3,6 +3,7 @@ import { enemyDevlings } from "../src/enemyDevlingData";
 import DevlingHead from "../src/devlingHead";
 import Player from "../src/player";
 import DialogueManager from "../src/dialogueManager";
+import { userInventory } from "../src/dummydata";
 
 export default class TrumpBattle extends Phaser.Scene {
   constructor() {
@@ -12,58 +13,51 @@ export default class TrumpBattle extends Phaser.Scene {
   preload() {
     //background image
     this.load.image("background", "../assets/battlewithapproach.png");
-
     this.load.image("playerCard", "../assets/cardDesign/cardFront.png");
-    // this.load.image("enemyCard", "../assets/cardDesign.png");
 
     //player card image (front of card)
     this.load.image("front", "../assets/cardDesign/cardFront.png");
-    // this.load.image("front", "../assets/cardFront.png");
 
     //enemy card images (back and front of card)
     this.load.image("enemyfront", "../assets/cardDesign/redCardFront.png");
-    // this.load.image("enemyfront", "../assets/cardDesign/cardFront.png");
     this.load.image("enemyback", "../assets/cardDesign/redCardBack.png");
 
     //nav sounds
     this.load.audio("nav", "../assets/sounds/keypad.mp3");
     this.load.audio("select", "../assets/sounds/select1.mp3");
     this.load.audio("error", "../assets/sounds/keypadReject.mp3");
-
     this.load.audio("roundOne", "../assets/sounds/roundOne.mp3");
     this.load.audio("roundTwo", "../assets/sounds/roundtwo.mp3");
     this.load.audio("finalRound", "../assets/sounds/finalRound.mp3");
-
     this.load.image("healthFull", "../assets/health_full.png");
     this.load.image("healthMid", "../assets/health_mid.png");
     this.load.image("healthLow", "../assets/health_low.png");
-
     this.load.image("playerDevling", "../assets/heads/standingSprite.png");
     this.load.image("enemyDevling", "../assets/heads/standingSprite.png");
     this.load.image("vsImage", "../assets/vsimg.png");
     this.load.audio("vsSound", "../assets/sounds/vssound.mp3");
     this.load.audio("playerNameSound", "../assets/sounds/beccaSound.mp3");
     this.load.audio("enemyNameSound", "../assets/sounds/norbion.mp3");
-
     this.load.image("roundOneImg", "../assets/roundOneImg.png");
     this.load.image("roundTwoImg", "../assets/roundTwoImg.png");
     this.load.image("finalRoundImg", "../assets/finalRoundImg.png");
-
     this.load.image("QuestionMarks", "../assets/cardQuestionMarks.png");
-
     this.load.audio("speechSound", "../assets/speechSound.wav");
 
     database.forEach((devling) => {
       if (!devling.sprite || !devling.nameSound) return;
       this.load.audio(`${devling.name}Sound`, devling.nameSound);
     });
-
     enemyDevlings.forEach((devling) => {
       if (!devling.sprite || !devling.nameSound) return;
       this.load.audio(`${devling.name}Sound`, devling.nameSound);
     });
-
     this.load.audio("backgroundMusic", "../assets/sounds/backgroundMusic.mp3");
+  }
+
+  init(data) {
+    this.playerDevling = data.playerDevling;
+    console.log(this.playerDevling);
   }
 
   create() {
@@ -160,7 +154,6 @@ export default class TrumpBattle extends Phaser.Scene {
     this.isFlipping = false;
 
     //==CHOSEN PLAYER & ENEMY DEVLING
-    this.playerDevling = database[0];
     this.enemyDevling = enemyDevlings[2];
 
     //
@@ -651,7 +644,7 @@ export default class TrumpBattle extends Phaser.Scene {
         this.enemyCard.setTexture("enemyfront");
         this.enemyCardName.setText(this.enemyDevling.name.toUpperCase());
         this.enemyCardStat.setText(`${this.enemyDevling.stats[stat]}`);
-        this.enemyHead.setAlpha(0); // Ensure it's hidden before fade-in
+        this.enemyHead.setAlpha(0);
 
         // Flip back first
         this.tweens.add({
@@ -659,7 +652,6 @@ export default class TrumpBattle extends Phaser.Scene {
           scaleX: 0.9,
           duration: 300,
           onComplete: () => {
-            // Now fade in text and head AFTER flip completes
             this.tweens.add({
               targets: [this.enemyCardStat, this.enemyCardName, this.enemyHead],
               alpha: 1,
@@ -779,9 +771,12 @@ export default class TrumpBattle extends Phaser.Scene {
     this.sound.stopAll();
     this.input.keyboard.enabled = false;
     this.cameras.main.fadeOut(1000, 0, 0, 0);
+
     this.time.delayedCall(1000, () => {
-      this.scene.start("overworldScene", { from: "trumpScene" });
-      this.input.keyboard.enabled = true;
+      this.scene.start("overworldScene", {
+        from: "trumpScene",
+        userInventory: this.userInventory,
+      });
     });
   }
 }

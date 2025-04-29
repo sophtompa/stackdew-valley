@@ -97,6 +97,14 @@ export default class overworldScene extends Phaser.Scene {
     this.player = new Player(this, this.spawnX, this.spawnY, "playerSheet");
     // this.physics.add.collider(this.player, mapLayer);
 
+    this.renderInventory = new renderInventory(this);
+
+    // 🧠 if coming from trumpScene, re-render inventory anyway
+    if (this.from === "trumpScene") {
+      console.log("Refreshing inventory after trumpScene...");
+    }
+    this.renderInventory.render(userInventory);
+
     //initialising space key
     this.spaceKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE

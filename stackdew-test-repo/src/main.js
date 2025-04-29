@@ -13,6 +13,7 @@ import loreScene from "../scenes/loreScene.js";
 import pauseScene from "../scenes/pauseScene.js";
 import trumpBattle from "../scenes/trumpScene.js";
 import dungeonScene from "../scenes/dungeonScene.js";
+import DevlingSelection from "../scenes/devlingSelection.js";
 
 // import trumpBattle from "../scenes/trumpScene.js";
 
@@ -57,7 +58,6 @@ function startGame() {
       },
     },
 
-
     scene: [
       titleScene,
       loreScene,
@@ -68,6 +68,7 @@ function startGame() {
       secondFloor,
       officeScene,
       ComputerScene,
+      DevlingSelection,
       battleScene,
       trumpBattle,
       battleCardScene,

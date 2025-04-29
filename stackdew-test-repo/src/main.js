@@ -31,9 +31,6 @@ WebFont.load({
 	},
 });
 
-//assign dummy player name
-this.registry.set('playerName', 'DummyPlayer');
-
 function startGame() {
 	const config = {
 		type: Phaser.AUTO,

@@ -3,7 +3,7 @@ import Player from '../src/player.js';
 import DialogueManager from '../src/dialogueManager.js';
 import renderInventory from '../src/renderInventory.js';
 import togglePause from '../src/togglePause.js';
-import { database, userInventory } from '../src/dummydata.js';
+import { database, userInventory, retiredInventory } from '../src/dummydata.js';
 
 export default class farmScene extends Phaser.Scene {
 	constructor() {
@@ -182,7 +182,8 @@ export default class farmScene extends Phaser.Scene {
 
 	update() {
 		this.player.update();
-		//removed becauese it was breaking the new watering graphic
+
+		//removed this because it was breaking the new watering graphic
 		//this.renderInventory.render(userInventory);
 
 		// pause toggle

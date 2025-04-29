@@ -3,7 +3,7 @@ import Player from '../src/player.js';
 import DialogueManager from '../src/dialogueManager.js';
 import renderInventory from '../src/renderInventory.js';
 import togglePause from '../src/togglePause.js';
-import { database, userInventory } from '../src/dummydata.js';
+import { database, userInventory, retiredInventory } from '../src/dummydata.js';
 
 export default class FirstFloor extends Phaser.Scene {
 	constructor() {
@@ -169,10 +169,9 @@ export default class FirstFloor extends Phaser.Scene {
 		// 	});
 		// }
 
-		//new email timer to only happen once
-		if (database.length > 0 && userInventory.length === 0) {
-			this.time.delayedCall(11000, this.spawnEmail, [], this);
-		}
+		//moved email timer to update so it happens more than once
+		//this flag stops it going nuts when it does spawn
+		this.emailSpawnScheduled = false;
 
 		this.createTriggers();
 
@@ -199,16 +198,32 @@ export default class FirstFloor extends Phaser.Scene {
 			togglePause(this);
 		}
 
-		//temporary test thing to remove devlings from oplayer ownership
+		//new email timer to only happen when we have space t ocollect devlings
+		if (
+			database.length > 0 &&
+			userInventory.length === 0 &&
+			this.floatingMail.visible === false &&
+			!this.emailSpawnScheduled
+		) {
+			this.emailSpawnScheduled = true;
+			this.time.delayedCall(1000, this.spawnEmail, [], this);
+		}
+
+		//temporary dev tool to remove devlings from player ownership
 		if (Phaser.Input.Keyboard.JustDown(this.xKey)) {
 			console.log('x');
-			for (let i = 0; i < userInventory.length; i++) {
+
+			//loop backwards to safely remove items while iterating
+			//because splice changes the indexes
+			for (let i = userInventory.length - 1; i >= 0; i--) {
 				if (userInventory[i].belongsTo) {
-					userInventory[i].belongsTo = null;
-					console.log(userInventory[i].name, 'removed');
-					this.renderInventory.render(userInventory);
+					retiredInventory.push(userInventory[i]);
+					console.log(userInventory[i].name, 'retired');
+					userInventory.splice(i, 1);
 				}
 			}
+			console.log(userInventory);
+			this.renderInventory.render(userInventory);
 		}
 
 		const bounds = new Phaser.Geom.Rectangle(
@@ -235,29 +250,8 @@ export default class FirstFloor extends Phaser.Scene {
 			this.floatingMail.visible
 		) {
 			this.computerTriggered = true;
+			// max 6 devlings in inventory at a time
 			const inventoryLimit = 6;
-
-			//original code for collecting devlings
-			// if (database.length > 0 && userInventory.length <= 6) {
-			// 	for (
-			// 		let i = 0;
-			// 		i < database.length && (i < userInventory.length + 3);
-			// 		i++
-			// 	) {
-			// 		const devling = database[i];
-			// 		if (!devling.belongsTo) {
-			// 			console.log(this.registry.get('playerName'));
-			// 			devling.belongsTo = this.registry.get('playerName');
-			// 			userInventory.push(devling);
-			// 			this.renderInventory.render(userInventory);
-			// 		}
-			// 		this.harvestingSound.play();
-			// 		console.log('devlings collected', userInventory);
-			// 		console.log('data total', database);
-			// 	}
-			// } else if (!isOverlapping && this.computerTriggered) {
-			// 	this.computerTriggered = false;
-			// }
 
 			//new code for collecting devlings
 			if (database.length > 0 && userInventory.length <= inventoryLimit) {
@@ -283,7 +277,7 @@ export default class FirstFloor extends Phaser.Scene {
 					this.harvestingSound.play();
 					console.log('devlings collected', userInventory);
 					this.registry.set('gotMail', false);
-					this.floatingMail.destroy();
+					this.floatingMail.setVisible(false);
 					this.renderInventory.render(userInventory);
 				}
 			}
@@ -317,6 +311,9 @@ export default class FirstFloor extends Phaser.Scene {
 			repeat: -1,
 			ease: 'Sine.easeInOut',
 		});
+
+		//reset so we can spawn again later
+		this.emailSpawnScheduled = false;
 	}
 
 	createTriggers() {

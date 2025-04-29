@@ -4,7 +4,7 @@ import DialogueManager from '../src/dialogueManager.js';
 import renderInventory from '../src/renderInventory.js';
 import farmScene from '../scenes/farmScene.js';
 import officeScene from '../scenes/officeScene.js';
-import { database, userInventory } from '../src/dummydata.js';
+import { database, userInventory, retiredInventory } from '../src/dummydata.js';
 
 export default class overworldScene extends Phaser.Scene {
 	constructor() {
@@ -20,8 +20,8 @@ export default class overworldScene extends Phaser.Scene {
 			farmScene: { x: 200, y: 220 },
 			officeScene: { x: 490, y: 130 },
 			battleScene: { x: 200, y: 275 },
-			dungeonScene: {x: 500, y: 320},
-			trumpScene: {x: 200, y: 275}
+			dungeonScene: { x: 500, y: 320 },
+			trumpScene: { x: 200, y: 275 },
 		};
 
 		const spawn = spawnPoints[this.from] || { x: 275, y: 300 };
@@ -86,9 +86,8 @@ export default class overworldScene extends Phaser.Scene {
 		//create hidden trigger for tech dungeon
 		this.dungeonTrigger = this.physics.add.sprite(550, 375, null);
 		this.dungeonTrigger.setSize(150, 100);
-		this.dungeonTrigger.setVisible(false); 
-		this.dungeonTriggered = false; 
-
+		this.dungeonTrigger.setVisible(false);
+		this.dungeonTriggered = false;
 
 		//create devling sprite images
 		// this.devlingSprites = {};
@@ -206,29 +205,28 @@ export default class overworldScene extends Phaser.Scene {
 			// &&
 			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
-      
-			console.log("go to j.a!")
-			this.moveSceneNew('battleScene')
-				
-			this.arenaTriggered = true;}
-		
+			console.log('go to j.a!');
+			this.moveSceneNew('battleScene');
+
+			this.arenaTriggered = true;
+		}
+
 		//create office scene overlap rules
 		const isOverlappingJMarket = Phaser.Geom.Intersects.RectangleToRectangle(
-				playerBounds,
-				this.jobMarketTrigger.getBounds()
-			);
-			if (
-				isOverlappingJMarket &&
-				!this.jobMarketTriggered 
-				// &&
-				// Phaser.Input.Keyboard.JustDown(this.spaceKey)
-			) {
-				console.log("go to job market!")
-				this.moveSceneNew('officeScene')
-		
-					
-					this.jobMarketTriggered = true;}
-		
+			playerBounds,
+			this.jobMarketTrigger.getBounds()
+		);
+		if (
+			isOverlappingJMarket &&
+			!this.jobMarketTriggered
+			// &&
+			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
+		) {
+			console.log('go to job market!');
+			this.moveSceneNew('officeScene');
+
+			this.jobMarketTriggered = true;
+		}
 
 		const isOverlappingDungeon = Phaser.Geom.Intersects.RectangleToRectangle(
 			playerBounds,
@@ -236,15 +234,15 @@ export default class overworldScene extends Phaser.Scene {
 		);
 		if (
 			isOverlappingDungeon &&
-			!this.dungeonTriggered 
+			!this.dungeonTriggered
 			// &&
 			// Phaser.Input.Keyboard.JustDown(this.spaceKey)
 		) {
-			console.log("go to dungeon!")
-			this.moveSceneNew('dungeonScene')
+			console.log('go to dungeon!');
+			this.moveSceneNew('dungeonScene');
 
-			
-			this.dungeonTriggered = true;}
+			this.dungeonTriggered = true;
+		}
 	}
 
 	moveScene(sceneKey) {

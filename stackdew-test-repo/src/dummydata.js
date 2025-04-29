@@ -121,5 +121,6 @@ export const database = [
 ];
 
 export let userInventory = [];
+export const retiredInventory = [];
 
 // module.exports = { database, cohort, userInventory };

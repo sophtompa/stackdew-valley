@@ -39,10 +39,12 @@ export default class RenderInventory {
 			console.log('gotmail');
 			this.mailIconUI = this.scene.add.sprite(50, invY - 30, 'newMailIcon');
 			this.mailIconUI.setDepth(7);
+			this.mailIconUI.setScale(1.5);
 			this.mailShadow = add.sprite(54, invY - 34, 'newMailIcon');
 			this.mailShadow.setTint(0x000000);
 			this.mailShadow.setAlpha(0.5);
 			this.mailShadow.setDepth(6);
+			this.mailShadow.setScale(1.5);
 		}
 
 		//destroy mail icon if we don't have email

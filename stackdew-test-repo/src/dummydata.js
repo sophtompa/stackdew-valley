@@ -13,6 +13,7 @@ export const database = [
     isPlanted: false,
     isWatered: false,
     isGrown: false,
+    hasBattled: false,
   },
 
   {
@@ -28,6 +29,7 @@ export const database = [
     isPlanted: false,
     isWatered: false,
     isGrown: false,
+    hasBattled: false,
   },
   {
     name: "evie",
@@ -44,6 +46,7 @@ export const database = [
     isPlanted: false,
     isWatered: false,
     isGrown: false,
+    hasBattled: false,
   },
   {
     name: "Noah",
@@ -61,6 +64,7 @@ export const database = [
     isPlanted: false,
     isWatered: false,
     isGrown: false,
+    hasBattled: false,
   },
   {
     name: "penny",
@@ -78,6 +82,7 @@ export const database = [
     isPlanted: false,
     isWatered: false,
     isGrown: false,
+    hasBattled: false,
   },
   {
     name: "steve",
@@ -94,6 +99,7 @@ export const database = [
     isPlanted: false,
     isWatered: false,
     isGrown: false,
+    hasBattled: false,
   },
 ];
 

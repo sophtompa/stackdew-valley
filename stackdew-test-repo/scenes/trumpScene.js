@@ -785,7 +785,8 @@ export default class TrumpBattle extends Phaser.Scene {
     this.time.delayedCall(1000, () => {
       this.scene.start("overworldScene", {
         from: "trumpScene",
-        userInventory: this.userInventory,
+
+        // userInventory: this.userInventory,
       });
     });
   }

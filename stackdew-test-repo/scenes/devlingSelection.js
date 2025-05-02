@@ -134,7 +134,9 @@ export default class DevlingSelection extends Phaser.Scene {
       .setDepth(3);
 
     //filtering
-    this.grownDevlings = database.filter((devling) => devling.isGrown === true);
+    this.grownDevlings = database.filter(
+      (devling) => devling.isGrown === true && devling.hasBattled === false
+    );
     this.currentDevlingIndex = 0;
 
     //first by default
@@ -304,16 +306,24 @@ export default class DevlingSelection extends Phaser.Scene {
       if (this.hasSelectedDevling) return;
       this.hasSelectedDevling = true;
 
-      const index = userInventory.findIndex(
-        (devling) => devling.name === this.playerDevling.name
+      const name = this.playerDevling.name;
+
+      const userIndex = userInventory.findIndex(
+        (devling) => devling.name === name
       );
-      if (index !== -1) {
-        userInventory.splice(index, 1);
+      if (userIndex !== -1) {
+        userInventory.splice(userIndex, 1);
       }
 
+      const dbIndex = database.findIndex((devling) => devling.name === name);
+      if (dbIndex !== -1) {
+        database[dbIndex].hasBattled = "true";
+      }
+      // this.hasSelectedDevling = false;
       this.time.delayedCall(2000, () => {
         this.scene.start("trumpBattle", {
           playerDevling: this.playerDevling,
+          // userInventory: this.userInventory,
         });
       });
     };

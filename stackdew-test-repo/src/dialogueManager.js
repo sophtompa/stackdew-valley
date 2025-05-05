@@ -1,5 +1,11 @@
 //todo MOVE X/Y COORDINATES TO EACH DIALOGUE LINE FOR FLEXIBILITY IN POSITION OF CONVERSATION
-//todo DROP SHADOW ON POINTER
+//todo DROP SHADOW ON POINTER MAYBE
+
+//instructions are here;
+//https://docs.google.com/document/d/1BFBMlYqjkxCOj6h-KyuFoI0Byq-edwZyRliMi3BItaw/edit?tab=t.0
+//scroll to bottom
+
+
 
 export default class DialogueManager {
 	constructor(scene) {

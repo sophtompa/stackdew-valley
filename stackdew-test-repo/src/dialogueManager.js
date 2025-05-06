@@ -5,8 +5,6 @@
 //https://docs.google.com/document/d/1BFBMlYqjkxCOj6h-KyuFoI0Byq-edwZyRliMi3BItaw/edit?tab=t.0
 //scroll to bottom
 
-
-
 export default class DialogueManager {
 	constructor(scene) {
 		this.scene = scene;
@@ -16,6 +14,7 @@ export default class DialogueManager {
 		this.textObjects = [];
 		this.currentLine = 0;
 		this.soundVolume = 0.1;
+		this.activeTimers = [];
 	}
 
 	startDialogue(lines, onComplete, x, y) {
@@ -60,24 +59,6 @@ export default class DialogueManager {
 		if (this.currentLine < this.lines.length) {
 			const currentLineData = this.lines[this.currentLine];
 			let lineText = currentLineData.text;
-
-			// // Handle placeholder text like #16 safely
-			// let isPlaceHolder = false;
-			// const placeholderMatch = lineText.match(/^#(\d+)$/);
-			// if (placeholderMatch) {
-			// 	const charCount = parseInt(placeholderMatch[1], 10);
-			// 	lineText = '\u00A0'.repeat(charCount); // Display blank spaces instead of #16
-			// 	isPlaceHolder = true;
-			// }
-
-			// // Create panel and text event for placeholder
-			// this.createPanel(
-			// 	yPosition,
-			// 	lineText,
-			// 	this.lines[this.currentLine].color,
-			// 	xPosition,
-			// 	this.lines[this.currentLine].speaker
-			// );
 
 			this.createPanel(
 				yPosition,
@@ -132,7 +113,7 @@ export default class DialogueManager {
 					return;
 				}
 
-				this.scene.time.delayedCall(1250, () => {
+				const fadeTimer = this.scene.time.delayedCall(1250, () => {
 					this.scene.tweens.add({
 						targets: [panelObj, textObj, shadowObj, pointerObj],
 						alpha: 0,
@@ -150,6 +131,7 @@ export default class DialogueManager {
 						},
 					});
 				});
+				this.activeTimers.push(fadeTimer);
 			});
 		}
 	}
@@ -342,7 +324,8 @@ export default class DialogueManager {
 				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
 				sound.play({ volume: this.soundVolume, rate: pitch });
 
-				this.scene.time.delayedCall(speed, typeNextChar);
+				const timer = this.scene.time.delayedCall(speed, typeNextChar);
+				this.activeTimers.push(timer);
 			} else if (onComplete) {
 				onComplete();
 			}
@@ -365,5 +348,30 @@ export default class DialogueManager {
 		this.shadows = [];
 		this.pointers = [];
 		this.textObjects = [];
+	}
+
+	stopDialogue() {
+		//stop shout wiggle if active
+		if (this.shoutTween) {
+			this.shoutTween.stop();
+			this.shoutTween = null;
+		}
+
+		//destroy all visuals
+		this.panels.forEach((p) => p.destroy());
+		this.shadows.forEach((s) => s.destroy());
+		this.pointers.forEach((p) => p.destroy());
+		this.textObjects.forEach((t) => t.destroy());
+
+		//clear arrays
+		this.panels = [];
+		this.shadows = [];
+		this.pointers = [];
+		this.textObjects = [];
+
+		//reset dialogue state
+		this.lines = [];
+		this.currentLine = 0;
+		this.onComplete = null;
 	}
 }

@@ -7,6 +7,7 @@ export default class minigameSnake extends Phaser.Scene {
 		this.snakeSprites = [];
 		this.activeGrowthTweens = [];
 		this.activeGrowthTimers = [];
+		this.lumps = [];
 		this.hasDied = false;
 	}
 
@@ -32,6 +33,10 @@ export default class minigameSnake extends Phaser.Scene {
 		this.load.audio('endgrowSound', '../assets/minigames/snake/endgrow.wav');
 		this.load.audio('youdiedSound', '../assets/minigames/snake/youdied.wav');
 		this.load.audio('lumpSound', '../assets/planting.wav');
+		this.load.audio(
+			'snekMoveSound',
+			'../assets/minigames/snake/snekMoveSound.wav'
+		);
 		this.load.audio('speechSound', '../assets/speechSound.wav');
 	}
 
@@ -51,6 +56,7 @@ export default class minigameSnake extends Phaser.Scene {
 		this.endgrowSound = this.sound.add('endgrowSound');
 		this.youdiedSound = this.sound.add('youdiedSound');
 		this.lumpSound = this.sound.add('lumpSound');
+		this.snekMoveSound = this.sound.add('snekMoveSound');
 
 		//initialise dialogue manager
 		this.dialogue = new DialogueManager(this);
@@ -131,8 +137,19 @@ export default class minigameSnake extends Phaser.Scene {
 		this.food = null;
 		this.justAteFood = false;
 
-		// get control input from scene
+		//get control input from scene
 		this.cursors = this.input.keyboard.createCursorKeys();
+
+		//weed score counter
+		this.weedsEaten = 0;
+		this.weedCounterText = this.add
+			.text(10, 5, 'Weeds: 0', {
+				fontFamily: 'VT323',
+				fontSize: '20px',
+				color: '#ffffff',
+			})
+			.setShadow(3, 3, '#000000', 2, false, true)
+			.setDepth(10);
 
 		//create slowmo key for debugging
 		this.input.keyboard.on('keydown-S', () => {
@@ -210,14 +227,18 @@ export default class minigameSnake extends Phaser.Scene {
 
 			let entry = this.snakeSprites[index];
 
-			//f the sprite/shadow pair doesn't exist, create them
+			//if sprite/shadow pair doesn't exist create them
 			if (!entry) {
 				const sprite = this.add.sprite(x, y, 'snakeSegment');
 				const shadow = this.add.sprite(x - 2, y + 2, 'snakeSegment');
 				shadow.setTint(0x000000).setAlpha(0.5).setDepth(4);
 
-				entry = { sprite, shadow };
-				this.snakeSprites[index] = entry;
+				sprite.setDepth(5);
+				sprite.setScale(index === 0 ? 1.0 : 0.7);
+				shadow.setScale(index === 0 ? 0.9 : 0.6);
+
+				this.snakeSprites[index] = { sprite, shadow };
+				entry = this.snakeSprites[index];
 			}
 
 			const { sprite, shadow } = entry;
@@ -252,13 +273,10 @@ export default class minigameSnake extends Phaser.Scene {
 	}
 
 	moveSnake() {
-		//no movement for the dead
-		if (this.hasDied) return;
+		//no movement if dead or frozen
+		if (this.hasDied || this.sceneIsFrozen) return;
 
-		//no movement if we're frozen (for countdown)
-		if (this.sceneIsFrozen) return;
-
-		//apply new direction once per move
+		//apply new direction if valid
 		if (
 			this.nextDirection &&
 			!this.isOpposite(this.nextDirection, this.direction)
@@ -268,45 +286,69 @@ export default class minigameSnake extends Phaser.Scene {
 		this.nextDirection = null;
 		this.directionChangedThisStep = false;
 
-		//pass snake head position into head variable
 		const head = this.snake[0];
 
-		//newHead is current head plus direction value
+		//calculate next grid position
 		const newHead = {
 			x: head.x + this.direction.x,
 			y: head.y + this.direction.y,
 		};
 
-		//check for newHead hitting wall at edge of grid
+		//convert current and next positions to pixel coords
+		const prevX = head.x * this.cellSize + this.cellSize / 2;
+		const prevY = head.y * this.cellSize + this.cellSize / 2;
+
+		//draw trailing line BEFORE moving
+		if (!this.hasDied && !this.sceneIsFrozen) {
+			this.leaveTrailSegment(prevX, prevY);
+		}
+
+		//check for wall collision
 		if (
 			newHead.x < 0 ||
 			newHead.x >= this.gridWidth ||
 			newHead.y < 0 ||
 			newHead.y >= this.gridHeight
 		) {
+			this.snake.unshift(newHead);
+			this.snake.pop();
+			this.ensureSpriteListLength();
+			this.renderSnake();
 			this.endGame();
 			return;
 		}
 
-		//psyically add new head position to front of snake array
+		//move snake
 		this.snake.unshift(newHead);
 
-		//check to see if snake collides with itself
+		//make a sound
+		const snekMovePitch = Phaser.Math.FloatBetween(0.3, 0.6);
+		const snekMoveDelay = Phaser.Math.Between(500, 600);
+		const snekMoveVolume = Phaser.Math.FloatBetween(0.1, 0.3);
+		this.time.delayedCall(snekMoveDelay, () => {
+			this.snekMoveSound
+				.setVolume(snekMoveVolume)
+				.play({ rate: snekMovePitch });
+		});
+
+		//check self collision
 		for (let i = 1; i < this.snake.length; i++) {
 			if (newHead.x === this.snake[i].x && newHead.y === this.snake[i].y) {
+				this.ensureSpriteListLength();
+				this.renderSnake();
 				this.endGame();
 				return;
 			}
 		}
 
-		//check for collision with lump
-		if (
-			this.lump &&
-			newHead.x === this.lump.gridX &&
-			newHead.y === this.lump.gridY
-		) {
-			this.endGame();
-			return;
+		//check lump collision
+		for (const lump of this.lumps) {
+			if (newHead.x === lump.gridX && newHead.y === lump.gridY) {
+				this.ensureSpriteListLength();
+				this.renderSnake();
+				this.endGame();
+				return;
+			}
 		}
 
 		const ateFood =
@@ -314,10 +356,9 @@ export default class minigameSnake extends Phaser.Scene {
 			newHead.x === this.food.gridX &&
 			newHead.y === this.food.gridY;
 
-		//store tail segment BEFORE removing it
+		//store tail BEFORE removing
 		const realTail = { ...this.snake[this.snake.length - 1] };
 
-		//always pop tail (ie don't grow immediately)
 		this.snake.pop();
 
 		if (ateFood) {
@@ -325,16 +366,25 @@ export default class minigameSnake extends Phaser.Scene {
 			this.foodShadow.destroy();
 			this.food = null;
 
+			//count weed eaten
+			this.weedsEaten++;
+			this.weedCounterText.setText(`Weeds: ${this.weedsEaten}`);
+
 			this.renderSnake();
 			this.animateSnakeGrowth(realTail);
 		} else {
-			//normal movement remove tail
 			this.renderSnake();
 		}
 	}
 
 	isOpposite(dir1, dir2) {
 		return dir1.x === -dir2.x && dir1.y === -dir2.y;
+	}
+
+	ensureSpriteListLength() {
+		while (this.snakeSprites.length < this.snake.length) {
+			this.snakeSprites.push(null);
+		}
 	}
 
 	spawnFoodTimer() {
@@ -348,7 +398,7 @@ export default class minigameSnake extends Phaser.Scene {
 	}
 
 	spawnLumpTimer() {
-		const delay = Phaser.Math.Between(4000, 8000);
+		const delay = Phaser.Math.Between(3000, 7000);
 		this.time.delayedCall(delay, () => {
 			this.spawnLump();
 			this.spawnLumpTimer();
@@ -377,24 +427,49 @@ export default class minigameSnake extends Phaser.Scene {
 		//record all positions currently filled by snake
 		const snakePositions = this.snake.map((seg) => `${seg.x},${seg.y}`);
 
-		//record all positions currently filled by lumps
-		const lumpKey = this.lump ? `${this.lump.gridX},${this.lump.gridY}` : null;
+		//record lump positions
+		const lumpPositions = this.lumps.map(
+			(lump) => `${lump.gridX},${lump.gridY}`
+		);
 
-		//work out valid positions for food (valid = all - snake) )
+		//combine all blocked positions
+		const blocked = new Set([...snakePositions, ...lumpPositions]);
+
+		//check if a position has at least two accessible neighboring tiles
+		const isAccessible = (pos) => {
+			const directions = [
+				{ x: 0, y: -1 },
+				{ x: 1, y: 0 },
+				{ x: 0, y: 1 },
+				{ x: -1, y: 0 },
+			];
+			let freeCount = 0;
+			for (const dir of directions) {
+				const nx = pos.x + dir.x;
+				const ny = pos.y + dir.y;
+				const key = `${nx},${ny}`;
+				if (
+					nx >= 0 &&
+					nx < this.gridWidth &&
+					ny >= 0 &&
+					ny < this.gridHeight &&
+					!blocked.has(key)
+				) {
+					freeCount++;
+				}
+			}
+			return freeCount >= 2;
+		};
+
+		//filter valid positions
 		const validPositions = allPositions.filter((pos) => {
 			const key = `${pos.x},${pos.y}`;
 			const head = this.snake[0];
 			const distance = Math.abs(pos.x - head.x) + Math.abs(pos.y - head.y);
 
-			//Ensure it’s not overlapping snake, not overlapping lump, and not too close to head
-			const overlapsSnake = snakePositions.includes(key);
-			const overlapsLump =
-				this.lump && pos.x === this.lump.gridX && pos.y === this.lump.gridY;
-
-			return !overlapsSnake && !overlapsLump && distance > 3;
+			return !blocked.has(key) && distance > 3 && isAccessible(pos);
 		});
 
-		//return if no valid positions available
 		if (validPositions.length === 0) return;
 
 		const pos = Phaser.Utils.Array.GetRandom(validPositions);
@@ -407,24 +482,21 @@ export default class minigameSnake extends Phaser.Scene {
 			.setDepth(3)
 			.setScale(1.5)
 			.setAlpha(0.4)
-			.setTint('0x000000');
+			.setTint(0x000000);
 
-		//record food grid position
 		this.food.gridX = pos.x;
 		this.food.gridY = pos.y;
 
-		//play sound at different pitches
 		const pitch = Phaser.Math.FloatBetween(0.8, 1.2);
 		this.foodSound.play({ rate: pitch });
 
-		//make food 'pulse'
 		this.tweens.add({
 			targets: this.food,
 			duration: 400,
 			yoyo: true,
 			repeat: -1,
 			tint: 0xffffff,
-			scale: { from: 1, to: 1.5 },
+			scale: { from: 1, to: 1.7 },
 			ease: 'Sine.easeInOut',
 		});
 
@@ -454,7 +526,7 @@ export default class minigameSnake extends Phaser.Scene {
 		//record all positions currently filled by snake
 		const snakePositions = this.snake.map((seg) => `${seg.x},${seg.y}`);
 
-		//record all position currently filled by food
+		//record all positions currently filled by food
 		const foodKey = this.food ? `${this.food.gridX},${this.food.gridY}` : null;
 
 		//work out valid positions for lump (valid = all - snake, - food) )
@@ -479,8 +551,8 @@ export default class minigameSnake extends Phaser.Scene {
 		const x = pos.x * this.cellSize + this.cellSize / 2;
 		const y = pos.y * this.cellSize + this.cellSize / 2;
 
-		this.lump = this.add.image(x, y, 'lump').setDepth(4).setScale(1);
-		this.lumpShadow = this.add
+		const lump = this.add.image(x, y, 'lump').setDepth(4).setScale(1);
+		const lumpShadow = this.add
 			.image(x - 2, y + 2, 'weed')
 			.setDepth(3)
 			.setScale(1.5)
@@ -489,9 +561,23 @@ export default class minigameSnake extends Phaser.Scene {
 
 		this.lumpSound.play();
 
+		//give the lump a little wiggle when it spawns
+		this.tweens.add({
+			targets: lump,
+			x: { from: lump.x - 2, to: lump.x + 2 },
+			duration: 75,
+			yoyo: true,
+			repeat: 3,
+			ease: 'Sine.easeInOut',
+		});
+
 		//record lump grid position
-		this.lump.gridX = pos.x;
-		this.lump.gridY = pos.y;
+		this.lumps.push({
+			sprite: lump,
+			shadow: lumpShadow,
+			gridX: pos.x,
+			gridY: pos.y,
+		});
 	}
 
 	animateSnakeGrowth(onComplete) {
@@ -597,6 +683,39 @@ export default class minigameSnake extends Phaser.Scene {
 		this.activeGrowthTimers.push(tailTimer);
 	}
 
+	leaveTrailSegment(x, y) {
+		const offsets = [
+			{ x: -3, y: 0 },
+			{ x: 0, y: -3 },
+			{ x: 3, y: 0 },
+			{ x: 0, y: 3 },
+		];
+
+		const randoX = Phaser.Math.Between(-4, 4);
+		const randoY = Phaser.Math.Between(-4, 4);
+
+		//trail 'lifetime' values to ensure trail gets longer as snake does
+		const baseDuration = 1750;
+		const trailDuration = baseDuration + this.snake.length * 75; // scales with snake length
+
+		offsets.forEach((offset, index) => {
+			const trail = this.add
+				.image(x + offset.x + randoX, y + offset.y + randoY, 'snakeSegment')
+				.setAlpha(index === 0 ? 0.45 : 0.3)
+				.setDepth(2)
+				.setTint(0x40221d)
+				.setScale(0.7 + index * 0.15);
+
+			this.tweens.add({
+				targets: trail,
+				alpha: 0,
+				duration: trailDuration + 100 * index,
+				ease: 'Linear',
+				onComplete: () => trail.destroy(),
+			});
+		});
+	}
+
 	startGameLoop() {
 		this.snakeMoveTimer = this.time.addEvent({
 			delay: 150,
@@ -670,51 +789,55 @@ export default class minigameSnake extends Phaser.Scene {
 			this.activeGrowthTimers = [];
 		}
 
-		//kill all other animations (weed pulsing etc)
-		this.tweens.killAll();
+		this.cameras.main.shake(100, 0.01);
 
-		//play sound
-		this.dieSound.setVolume(0.3).play();
+		//teeny delay before killing all animations, pulsing weeds, etc
+		this.time.delayedCall(75, () => {
+			this.tweens.killAll();
 
-		//initialise fade to black
-		const fade = this.add
-			.rectangle(400, 224, 800, 448, 0x000000)
-			.setAlpha(0)
-			.setDepth(10);
+			//play sound
+			this.dieSound.setVolume(0.3).play();
 
-		//initialise text
-		const deathText = this.add
-			.text(400, 224, 'YOU DIED.', {
-				fontFamily: 'VT323',
-				fontSize: '32px',
-				color: '#ff0000',
-			})
-			.setOrigin(0.5)
-			.setAlpha(0)
-			.setDepth(11)
-			.setScale(1.6);
+			//initialise fade to black
+			const fade = this.add
+				.rectangle(400, 224, 800, 448, 0x000000)
+				.setAlpha(0)
+				.setDepth(10);
 
-		//fade in the black background
-		this.tweens.add({
-			targets: fade,
-			alpha: 1,
-			duration: 1800,
-			ease: 'Linear',
-			onComplete: () => {
-				this.youdiedSound.setVolume(0.6).play();
-				//fade in the red text
-				this.tweens.add({
-					targets: deathText,
-					alpha: 1,
-					duration: 2500,
-					scale: { from: 1.6, to: 2 },
-					ease: 'Cubic.easeOut',
-					onComplete: () => {
-						//then pause the scene
-						this.scene.pause();
-					},
-				});
-			},
+			//initialise text
+			const deathText = this.add
+				.text(400, 224, 'YOU DIED.', {
+					fontFamily: 'VT323',
+					fontSize: '32px',
+					color: '#ff0000',
+				})
+				.setOrigin(0.5)
+				.setAlpha(0)
+				.setDepth(11)
+				.setScale(1.6);
+
+			//fade in the black background
+			this.tweens.add({
+				targets: fade,
+				alpha: 1,
+				duration: 1800,
+				ease: 'Linear',
+				onComplete: () => {
+					this.youdiedSound.setVolume(0.6).play();
+					//fade in the red text
+					this.tweens.add({
+						targets: deathText,
+						alpha: 1,
+						duration: 2500,
+						scale: { from: 1.6, to: 2 },
+						ease: 'Cubic.easeOut',
+						onComplete: () => {
+							//then pause the scene
+							this.scene.pause();
+						},
+					});
+				},
+			});
 		});
 	}
 }

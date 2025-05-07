@@ -15,6 +15,7 @@ export default class DialogueManager {
 		this.currentLine = 0;
 		this.soundVolume = 0.1;
 		this.activeTimers = [];
+		this.typingTimer = null;
 	}
 
 	startDialogue(lines, onComplete, x, y) {
@@ -90,16 +91,6 @@ export default class DialogueManager {
 					yoyo: true,
 					repeat: -1,
 				});
-
-				// You can also make the panel jiggle if you want
-				// this.scene.tweens.add({
-				//     targets: panelObj,
-				//     x: { from: panelObj.x - 2, to: panelObj.x + 2 },
-				//     y: { from: panelObj.y - 1, to: panelObj.y + 1 },
-				//     duration: 50,
-				//     yoyo: true,
-				//     repeat: -1,
-				// });
 			} else {
 				this.soundVolume = 0.1;
 			}
@@ -310,13 +301,9 @@ export default class DialogueManager {
 		let currentText = '';
 
 		const typeNextChar = () => {
-			if (!textObject || !wrappedText) {
-				return;
-			}
+			if (!textObject || !wrappedText) return;
 
 			if (i < wrappedText.length) {
-				// source of potential crash to do with bitmapped text
-				// textObject.text += wrappedText[i];
 				currentText += wrappedText[i];
 				textObject.setText(currentText);
 				i++;
@@ -324,8 +311,7 @@ export default class DialogueManager {
 				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
 				sound.play({ volume: this.soundVolume, rate: pitch });
 
-				const timer = this.scene.time.delayedCall(speed, typeNextChar);
-				this.activeTimers.push(timer);
+				this.typingTimer = this.scene.time.delayedCall(speed, typeNextChar);
 			} else if (onComplete) {
 				onComplete();
 			}
@@ -357,19 +343,23 @@ export default class DialogueManager {
 			this.shoutTween = null;
 		}
 
+		//stop current typing animation if running
+		if (this.typingTimer) {
+			this.typingTimer.remove();
+			this.typingTimer = null;
+		}
+
 		//destroy all visuals
 		this.panels.forEach((p) => p.destroy());
 		this.shadows.forEach((s) => s.destroy());
 		this.pointers.forEach((p) => p.destroy());
 		this.textObjects.forEach((t) => t.destroy());
 
-		//clear arrays
+		//clear states
 		this.panels = [];
 		this.shadows = [];
 		this.pointers = [];
 		this.textObjects = [];
-
-		//reset dialogue state
 		this.lines = [];
 		this.currentLine = 0;
 		this.onComplete = null;

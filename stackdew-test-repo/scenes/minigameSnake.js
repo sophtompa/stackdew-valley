@@ -523,28 +523,54 @@ export default class minigameSnake extends Phaser.Scene {
 			}
 		}
 
-		//record all positions currently filled by snake
+		//record blocked positions: snake + food + lumps
 		const snakePositions = this.snake.map((seg) => `${seg.x},${seg.y}`);
+		const lumpPositions = this.lumps.map(
+			(lump) => `${lump.gridX},${lump.gridY}`
+		);
+		const foodPosition = this.food
+			? [`${this.food.gridX},${this.food.gridY}`]
+			: [];
 
-		//record all positions currently filled by food
-		const foodKey = this.food ? `${this.food.gridX},${this.food.gridY}` : null;
+		const blocked = new Set([
+			...snakePositions,
+			...lumpPositions,
+			...foodPosition,
+		]);
 
-		//work out valid positions for lump (valid = all - snake, - food) )
+		const isAccessible = (pos) => {
+			const directions = [
+				{ x: 0, y: -1 },
+				{ x: 1, y: 0 },
+				{ x: 0, y: 1 },
+				{ x: -1, y: 0 },
+			];
+			let freeCount = 0;
+			for (const dir of directions) {
+				const nx = pos.x + dir.x;
+				const ny = pos.y + dir.y;
+				const key = `${nx},${ny}`;
+				if (
+					nx >= 0 &&
+					nx < this.gridWidth &&
+					ny >= 0 &&
+					ny < this.gridHeight &&
+					!blocked.has(key)
+				) {
+					freeCount++;
+				}
+			}
+			return freeCount >= 2;
+		};
+
 		const validPositions = allPositions.filter((pos) => {
 			const key = `${pos.x},${pos.y}`;
 			const head = this.snake[0];
 			const distance = Math.abs(pos.x - head.x) + Math.abs(pos.y - head.y);
 
-			//ensure it’s not overlapping snake, not overlapping lump, and not too close to head
-			const overlapsSnake = snakePositions.includes(key);
-			const overlapsFood =
-				this.food && pos.x === this.food.gridX && pos.y === this.food.gridY;
-
-			//return if chosen spot is filled with snake or food or its too close to snake head
-			return !overlapsSnake && !overlapsFood && distance > 3;
+			return !blocked.has(key) && distance > 3 && isAccessible(pos);
 		});
 
-		//return if no valid positions available
 		if (validPositions.length === 0) return;
 
 		const pos = Phaser.Utils.Array.GetRandom(validPositions);
@@ -553,21 +579,21 @@ export default class minigameSnake extends Phaser.Scene {
 
 		const lump = this.add.image(x, y, 'lump').setDepth(4).setScale(1);
 		const lumpShadow = this.add
-			.image(x - 2, y + 2, 'weed')
+			.image(x - 2, y + 2, 'lump')
 			.setDepth(3)
-			.setScale(1.5)
+			.setScale(1.1)
 			.setAlpha(0.4)
-			.setTint('0x000000');
+			.setTint(0x000000);
 
 		this.lumpSound.play();
 
-		//give the lump a little wiggle when it spawns
+		// add idle wiggle
 		this.tweens.add({
 			targets: lump,
-			x: { from: lump.x - 2, to: lump.x + 2 },
-			duration: 75,
+			x: { from: x - 2, to: x + 2 },
+			duration: 100,
 			yoyo: true,
-			repeat: 3,
+			repeat: 4,
 			ease: 'Sine.easeInOut',
 		});
 

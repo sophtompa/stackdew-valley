@@ -99,9 +99,9 @@ export default class overworldScene extends Phaser.Scene {
 
     this.renderInventory = new renderInventory(this);
 
-    // 🧠 if coming from trumpScene, re-render inventory anyway
+    //if coming from trumpScene, re-render inventory anyway
     if (this.from === "trumpScene") {
-      console.log("Refreshing inventory after trumpScene...");
+      console.log("Refreshing inventory after trumpScene");
     }
     this.renderInventory.render(userInventory);
 
@@ -111,8 +111,8 @@ export default class overworldScene extends Phaser.Scene {
     );
 
     //initialise render inventory
-    this.renderInventory = new renderInventory(this);
-    this.renderInventory.render(userInventory);
+    // this.renderInventory = new renderInventory(this);
+    // this.renderInventory.render(userInventory);
 
     //initialise dialogue
     this.dialogue = new DialogueManager(this);

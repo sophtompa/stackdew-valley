@@ -1,0 +1,3 @@
+let retiredInventory = [];
+
+export { retiredInventory };

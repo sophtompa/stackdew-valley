@@ -4,6 +4,7 @@ import DevlingHead from "../src/devlingHead";
 import Player from "../src/player";
 import DialogueManager from "../src/dialogueManager";
 import { userInventory } from "../src/dummydata";
+import { retiredInventory } from "../src/retiredInventory";
 
 export default class DevlingSelection extends Phaser.Scene {
   constructor() {
@@ -62,6 +63,7 @@ export default class DevlingSelection extends Phaser.Scene {
   create() {
     this.dialogue = new DialogueManager(this);
     this.isDialogueRunning = false;
+    this.hasSelectedDevling = false;
 
     this.backgroundMusic = this.sound.add("backgroundMusic", {
       loop: true,
@@ -134,10 +136,11 @@ export default class DevlingSelection extends Phaser.Scene {
       .setDepth(3);
 
     //filtering
-    this.grownDevlings = database.filter(
-      (devling) => devling.isGrown === true && devling.hasBattled === false
-    );
+    this.grownDevlings = database.filter((devling) => devling.isGrown === true);
     this.currentDevlingIndex = 0;
+
+    // this.grownDevlings = database.filter((devling) => devling.isGrown === true);
+    // this.currentDevlingIndex = 0;
 
     //first by default
     this.playerDevling = this.grownDevlings[this.currentDevlingIndex];
@@ -301,29 +304,35 @@ export default class DevlingSelection extends Phaser.Scene {
       this.updatePlayerDevlingInfo(centerX, centerY); //for updating the heads, stats and name
     };
 
-    //only start battle when devling is selected
     this.startBattle = () => {
       if (this.hasSelectedDevling) return;
-      this.hasSelectedDevling = true;
+      if (!this.playerDevling) {
+        console.warn("No player devling selected!");
+        return;
+      }
 
+      this.hasSelectedDevling = true;
       const name = this.playerDevling.name;
 
       const userIndex = userInventory.findIndex(
         (devling) => devling.name === name
       );
+
       if (userIndex !== -1) {
-        userInventory.splice(userIndex, 1);
+        const retiredDevling = userInventory.splice(userIndex, 1)[0];
+        retiredInventory.push(retiredDevling);
+        console.log("Retired Inventory:", retiredInventory);
       }
 
       const dbIndex = database.findIndex((devling) => devling.name === name);
       if (dbIndex !== -1) {
-        database[dbIndex].hasBattled = "true";
+        database[dbIndex].hasBattled = true;
+        console.log("ok");
       }
-      // this.hasSelectedDevling = false;
+
       this.time.delayedCall(2000, () => {
         this.scene.start("trumpBattle", {
           playerDevling: this.playerDevling,
-          // userInventory: this.userInventory,
         });
       });
     };

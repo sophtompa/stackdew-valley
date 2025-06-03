@@ -12,7 +12,6 @@ export default class farmScene extends Phaser.Scene {
 
 	init(data) {
 		this.from = data.from;
-		console.log(this.from);
 
 		//Where we spawn when coming FROM these locations
 		const spawnPoints = {
@@ -51,9 +50,12 @@ export default class farmScene extends Phaser.Scene {
 		this.load.audio('birdsSound', '../assets/birds.wav');
 		this.load.audio('speechSound', '../assets/speechSound.wav');
 		this.load.audio('doorSound', '../assets/door.wav');
+		this.load.audio('levelUpSound', '../assets/levelup.wav');
 	}
 
 	create() {
+		this.input.keyboard.enabled = true;
+
 		this.spaceKey = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		);
@@ -112,6 +114,7 @@ export default class farmScene extends Phaser.Scene {
 		this.harvestingSound = this.sound.add('harvestingSound');
 		this.birdSound = this.sound.add('birdsSound');
 		this.doorSound = this.sound.add('doorSound');
+		this.levelUpSound = this.sound.add('levelUpSound');
 		this.doorSoundPlayed = false;
 
 		// FRONT DOOR to firstFloor
@@ -177,6 +180,25 @@ export default class farmScene extends Phaser.Scene {
 		const randomDelay = Phaser.Math.Between(21000, 24000);
 		this.time.delayedCall(randomDelay, () => {
 			this.tryTriggerScarecrowMessage();
+		});
+
+		//handle passing score from snake minigame back to farmScene
+		this.events.on('wake', () => {
+			this.isDialogueRunning = false;
+			if (!this.weedsEatenFromBySnake) {
+				console.log(
+					'Returning from snake game with weeds eaten:',
+					this.weedsEatenBySnake
+				);
+
+				//use the value to boost the devlings
+				this.applyWeedBonus(this.weedsEatenBySnake);
+
+				//clear the value as its not needed again right now
+				delete this.weedsEatenBySnake;
+			} else {
+				console.log('wtf');
+			}
 		});
 	}
 
@@ -299,33 +321,56 @@ export default class farmScene extends Phaser.Scene {
 				this.wateringSound.play({ volume: 0.5 });
 				console.log('watering', unwatered.name);
 				this.renderInventory.render(userInventory);
-			} else if (harvestableIndex !== -1) {
-				//harvest
-				const devling = userInventory[harvestableIndex];
-				devling.isGrown = true;
-				devling.isPlanted = false;
-				devling.isWatered = false;
+			} else if (
+				//check to see if there's harvestable devlings
+				userInventory.some(
+					(devling) =>
+						devling.isPlanted && devling.isWatered && !devling.isGrown
+				)
+			) {
+				//stop dialogue and play minigame
+				if (this.dialogue && this.dialogue.stopDialogue) {
+					this.dialogue.stopDialogue();
+				}
+				this.scene.launch('minigameSnake');
+				this.scene.sleep('farmScene');
 
-				console.log(devling.name, 'has grown and has been harvested!');
-				this.harvestingSound.play();
-				this.renderInventory.render(userInventory);
+				//harvest all eligible devlings
+				const harvestedDevlings = [];
+				userInventory.forEach((devling) => {
+					if (devling.isPlanted && devling.isWatered && !devling.isGrown) {
+						devling.isGrown = true;
+						devling.isPlanted = false;
+						devling.isWatered = false;
+						harvestedDevlings.push(devling.name);
+					}
+				});
+
+				if (harvestedDevlings.length > 0) {
+					console.log('Harvested devlings:', harvestedDevlings.join(', '));
+					this.harvestingSound.play();
+					this.renderInventory.render(userInventory);
+				}
 			} else {
 				//nothing to do
-				this.dialogue.startDialogue(
-					[
-						{
-							text: `Nothing to do here right now...`,
-							speaker: '',
-							color: '#1f451c',
+				if (this.dialogue && this.dialogue.stopDialogue) {
+					this.dialogue.stopDialogue();
+					this.dialogue.startDialogue(
+						[
+							{
+								text: `Nothing to do here right now...`,
+								speaker: '',
+								color: '#1f451c',
+							},
+						],
+						() => {
+							this.isDialogueRunning = false;
 						},
-					],
-					() => {
-						this.isDialogueRunning = false;
-					},
-					385,
-					20
-				);
-				this.isDialogueRunning = true;
+						385,
+						20
+					);
+					this.isDialogueRunning = true;
+				}
 			}
 		}
 	}
@@ -344,20 +389,6 @@ export default class farmScene extends Phaser.Scene {
 		this.cameras.main.fadeOut(500, 0, 0, 0);
 		this.time.delayedCall(500, () => {
 			this.scene.start(sceneKey, { from: 'farmScene' });
-		});
-	}
-
-	jiggleSprite(sprite) {
-		this.tweens.add({
-			targets: sprite,
-			x: sprite.x + 3,
-			yoyo: true,
-			repeat: 3,
-			duration: 50,
-			ease: 'Sine.easeInOut',
-			onComplete: () => {
-				sprite.x = sprite.x - 3; // reset to original position just in case
-			},
 		});
 	}
 
@@ -405,5 +436,84 @@ export default class farmScene extends Phaser.Scene {
 
 		const today = new Date().getDay();
 		return days[today];
+	}
+
+	applyWeedBonus(weedCount) {
+		//triple our score from the snake game (so a *good* score is in the 60s)
+		let increaseChance = weedCount * 10;
+		//cap the bonus chance at 90 so there's always a small chance of failure
+		if (increaseChance > 90) {
+			increaseChance = 90;
+		}
+		console.log(
+			`bonus chance of ${increaseChance} derived from ${weedCount} weeds eaten...`
+		);
+
+		//devling stat keys to be possibly improved
+		const statKeys = [
+			'frontend',
+			'backend',
+			'dev ego',
+			'commits',
+			'debugging',
+			'Resilience',
+		];
+
+		let delay = 0;
+
+		//iterate over the devlings in userInventory
+		userInventory.forEach((devling, index) => {
+			this.time.delayedCall(delay, () => {
+				//pick a stat key at random
+				const randomKey = statKeys[Phaser.Math.Between(0, statKeys.length - 1)];
+
+				//random number between 0 and 99
+				const d100 = Phaser.Math.Between(0, 99);
+				console.log(
+					`Devling is ${devling.name}, d100 = ${d100}, increaseChance is ${increaseChance}`
+				);
+
+				//if d100 roll is less than
+				if (d100 < increaseChance) {
+					devling[randomKey] += 1;
+					this.renderInventory.jiggleSprite(devling.name);
+					this.sound.play('levelUpSound', {
+						volume: 0.3,
+						detune: Phaser.Math.Between(-50, 50),
+					});
+					this.isDialogueRunning = true;
+					this.dialogue.startDialogue(
+						[
+							{
+								text: `${devling.name}'s ${randomKey} increased to ${devling[randomKey]}`,
+								speaker: '',
+								color: '#1f451c',
+								x: 380,
+								y: 20,
+							},
+						],
+						null,
+						380,
+						20
+					);
+				} else {
+					this.dialogue.startDialogue(
+						[
+							{
+								text: `Sadly, ${devling.name} did not improve their skills this time.`,
+								speaker: '',
+								color: '#1f451c',
+								x: 365,
+								y: 20,
+							},
+						],
+						null,
+						365,
+						20
+					);
+				}
+			});
+			delay += 2750;
+		});
 	}
 }

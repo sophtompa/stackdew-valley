@@ -41,6 +41,8 @@ export default class minigameSnake extends Phaser.Scene {
 	}
 
 	create() {
+		this.input.keyboard.enabled = true;
+
 		//set up grid
 		this.cellSize = 32;
 		this.gridWidth = this.scale.width / this.cellSize;
@@ -86,17 +88,10 @@ export default class minigameSnake extends Phaser.Scene {
 					y: 20,
 				},
 				{
-					text: `Also the DfE would start asking difficult questions ...`,
+					text: `Also the DfE would start asking difficult questions , but I digress ...`,
 					speaker: '',
 					color: '#1f451c',
 					x: 225,
-					y: 20,
-				},
-				{
-					text: `I digress ...`,
-					speaker: '',
-					color: '#1f451c',
-					x: 300,
 					y: 20,
 				},
 				{
@@ -351,6 +346,7 @@ export default class minigameSnake extends Phaser.Scene {
 			}
 		}
 
+		//eat food
 		const ateFood =
 			this.food &&
 			newHead.x === this.food.gridX &&
@@ -858,8 +854,13 @@ export default class minigameSnake extends Phaser.Scene {
 						scale: { from: 1.6, to: 2 },
 						ease: 'Cubic.easeOut',
 						onComplete: () => {
-							//then pause the scene
-							this.scene.pause();
+							this.input.keyboard.once('keydown-SPACE', () => {
+								const farmScene = this.scene.get('farmScene');
+								farmScene.weedsEatenBySnake = this.weedsEaten;
+
+								this.scene.stop('minigameSnake');
+								this.scene.wake('farmScene');
+							});
 						},
 					});
 				},

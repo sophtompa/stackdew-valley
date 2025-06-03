@@ -1,4 +1,3 @@
-//todo MOVE X/Y COORDINATES TO EACH DIALOGUE LINE FOR FLEXIBILITY IN POSITION OF CONVERSATION
 //todo DROP SHADOW ON POINTER MAYBE
 
 //instructions are here;
@@ -308,7 +307,10 @@ export default class DialogueManager {
 				textObject.setText(currentText);
 				i++;
 
-				let pitch = speaker === '' ? 1 : Phaser.Math.FloatBetween(0.7, 1.3);
+				let pitch =
+					speaker === ''
+						? Phaser.Math.FloatBetween(0.98, 1.02)
+						: Phaser.Math.FloatBetween(0.7, 1.3);
 				sound.play({ volume: this.soundVolume, rate: pitch });
 
 				this.typingTimer = this.scene.time.delayedCall(speed, typeNextChar);

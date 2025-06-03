@@ -57,7 +57,6 @@ function startGame() {
 		},
 
 		scene: [
-			minigameSnake,
 			titleScene,
 			loreScene,
 			firstFloor,
@@ -72,6 +71,7 @@ function startGame() {
 			battleCardScene,
 			pauseScene,
 			dungeonScene,
+			minigameSnake,
 		],
 	};
 	const game = new Phaser.Game(config);
